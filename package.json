@@ -1,0 +1,21 @@
+{
+  "name": "opencode-feral",
+  "version": "0.1.0",
+  "description": "Feral mode for OpenCode: uncensored build/plan agents, contract-driven retries, sampling controls, and scratch tools.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "agents",
+    "feral"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saperan/feral-opencode.git"
+  },
+  "scripts": {
+    "install-local": "./install.sh"
+  }
+}

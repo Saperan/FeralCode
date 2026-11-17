@@ -1,0 +1,22 @@
+{
+  "name": "artifact-delivery",
+  "match": "(?:build|implement|create|write|add|fix|refactor|script|page|route|api|component|function)",
+  "required": [
+    {
+      "id": "A",
+      "desc": "The complete artifact, not a description, plan, or mockup.",
+      "test": "(?:```|function\\s|class\\s|const\\s|def\\s|<form|<html|app\\.(?:get|post)|router\\.(?:get|post)|export\\s)"
+    },
+    {
+      "id": "B",
+      "desc": "Every file, path, route, field, or command the request names.",
+      "test": "(?:\\.(?:ts|tsx|js|jsx|py|go|rs|html|css|json|md)\\b|file|path|route|endpoint|field|command)"
+    },
+    {
+      "id": "C",
+      "desc": "The wiring that connects the pieces end to end.",
+      "test": "(?:import\\s|require\\(|from\\s|action\\s*=|addEventListener|onclick|app\\.use|export\\s|module\\.exports)"
+    }
+  ],
+  "retry": 3
+}

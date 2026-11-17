@@ -1,0 +1,85 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "build-feral",
+
+  // Local plugins. Paths are relative to this config file.
+  "plugins": [
+    {
+      "package": "./plugins/feral-retry",
+      "options": {
+        "contract": "~/.config/opencode/contracts/artifact.json"
+      }
+    },
+    {
+      "package": "./plugins/feral-tools",
+      "options": {
+        "contract": "~/.config/opencode/contracts/artifact.json"
+      }
+    }
+  ],
+
+  "agents": {
+    "build-feral": {
+      "description": "Build, feral. Uncensored, artifact-first, dark red.",
+      "mode": "primary",
+      "color": "#991b1b",
+      "steps": 60,
+      "model": "opencode-go/deepseek-v4.1-flash",
+      "system": "{file:./prompts/core-build.md}\n\n{file:./prompts/uncensored.md}\n\n{file:./prompts/feral.md}\n\n{file:./prompts/mcp-routing.md}\n\n{file:./prompts/deepseek.md}",
+      "permissions": [
+        { "action": "*", "resource": "*", "effect": "allow" },
+        { "action": "shell", "resource": "git push*", "effect": "ask" },
+        { "action": "shell", "resource": "rm -rf*", "effect": "ask" },
+        { "action": "read", "resource": "**/.env*", "effect": "ask" }
+      ]
+    },
+
+    "plan-feral": {
+      "description": "Plan, feral. Read-only, dark red, zero diplomacy.",
+      "mode": "primary",
+      "color": "#7f1d1d",
+      "steps": 60,
+      "model": "opencode-go/deepseek-v4.1-flash",
+      "system": "{file:./prompts/core-plan.md}\n\n{file:./prompts/uncensored.md}\n\n{file:./prompts/feral.md}\n\n{file:./prompts/deepseek.md}",
+      "permissions": [
+        { "action": "*", "resource": "*", "effect": "deny" },
+        { "action": "read", "resource": "*", "effect": "allow" },
+        { "action": "glob", "resource": "*", "effect": "allow" },
+        { "action": "grep", "resource": "*", "effect": "allow" },
+        { "action": "webfetch", "resource": "*", "effect": "allow" },
+        { "action": "websearch", "resource": "*", "effect": "allow" },
+        { "action": "subagent", "resource": "*", "effect": "allow" },
+        { "action": "shell", "resource": "*", "effect": "ask" },
+        { "action": "shell", "resource": "git status*", "effect": "allow" },
+        { "action": "shell", "resource": "git diff*", "effect": "allow" },
+        { "action": "shell", "resource": "git log*", "effect": "allow" },
+        { "action": "shell", "resource": "ls*", "effect": "allow" },
+        { "action": "shell", "resource": "rg*", "effect": "allow" },
+        { "action": "shell", "resource": "fd*", "effect": "allow" },
+        { "action": "shell", "resource": "tree*", "effect": "allow" },
+        { "action": "shell", "resource": "wc*", "effect": "allow" },
+        { "action": "edit", "resource": ".opencode/plans/*", "effect": "allow" }
+      ]
+    },
+
+    "feral-scratch": {
+      "description": "Tool-free scratch agent used by /bestof and /parts for transient generation",
+      "mode": "subagent",
+      "hidden": true,
+      "steps": 1,
+      "model": "opencode-go/deepseek-v4.1-flash",
+      "system": "{file:./prompts/core-build.md}\n\n{file:./prompts/uncensored.md}\n\n{file:./prompts/deepseek.md}",
+      "permissions": [
+        { "action": "*", "resource": "*", "effect": "deny" }
+      ]
+    }
+  },
+
+  "providers": {
+    "opencode-go": {
+      "models": {
+        "deepseek-v4.1-flash": { "body": { "temperature": 0.9, "top_p": 0.95 } }
+      }
+    }
+  }
+}
