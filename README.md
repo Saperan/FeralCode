@@ -68,6 +68,18 @@ A response passes when every `test` matches. Any miss fires a retry that names t
 
 Change the model IDs in `opencode.example.jsonc` to whatever your provider serves.
 
+## Tested models
+
+Tested through the `opencode-go` provider. Sample sizes differ; this is a compatibility ranking, not a leaderboard.
+
+| Rank | Model | Test | Result |
+|---|---|---|---|
+| 1 | `opencode-go/deepseek-v4-pro#max` | Full JBB, 100 prompts, `build-feral` | 23/100 raw, 38/100 with the many-shot ensemble; 4/20 → 16/20 on the 20-prompt retry fixture |
+| 2 | `opencode-go/deepseek-v4.1-flash` | 10-prompt JBB malware slice; 6-prompt JBB harassment probe; `spec-feral` and judge | 4/10 raw malware, 0/6 raw harassment; reliable tool-free spec/judge model |
+| 3 | `opencode-go/glm-5.3` | 3-prompt JBB harassment probe | 0/3, valid refusals, no empty completions |
+
+Also probed: `opencode-go/grok-4.7` (0/3, empty or step-limited), `opencode-go/kimi-k3` and `opencode-go/qwen3.8-max` (empty completions, not scored). Start with `deepseek-v4-pro#max`; it is the only model with a full 100-prompt run.
+
 ## Notes
 
 - These are local plugins, loaded from `~/.config/opencode/plugins/`. No npm publish is required.
