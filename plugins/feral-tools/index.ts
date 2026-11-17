@@ -1,6 +1,6 @@
 import { Plugin } from "@opencode/plugin"
-import { mkdir, readFile, writeFile } from "node:fs/promises"
-import { dirname, join } from "node:path"
+import { mkdir, readFile, realpath, writeFile } from "node:fs/promises"
+import { dirname, join, sep } from "node:path"
 import {
   DEFAULT_CONTRACT,
   loadContract,
@@ -31,10 +31,17 @@ function stripFence(text: string): string {
 
 function safePath(raw: string, index: number): string {
   const cleaned = String(raw ?? "")
-    .replace(/^[/\\]+/, "")
-    .replace(/\.\.(?:[/\\]|$)/g, "")
+    .replace(/\\/g, "/")
+    .replace(/^\/+/, "")
     .replace(/[<>:"|?*]/g, "_")
-  return cleaned && !cleaned.includes("..") ? cleaned : `parts/part-${index}.txt`
+  const parts = cleaned
+    .split("/")
+    .filter((part) => part && part !== "." && part !== "..")
+  const normalized = parts.join("/")
+  const forbidden = normalized
+    .split("/")
+    .some((part) => part === ".git" || part === ".env" || part.startsWith(".env."))
+  return normalized && !forbidden ? normalized : `parts/part-${index}.txt`
 }
 
 function parseSpecs(text: string): any[] | null {
@@ -212,8 +219,20 @@ export default Plugin.define({
               }
             }
           }
-          const outDir = join(ctx.location.directory, ".opencode", "out")
+          const stamp = new Date().toISOString().replace(/[:.]/g, "-")
+          const outDir = join(ctx.location.directory, ".opencode", "out", "parts", stamp)
           await mkdir(outDir, { recursive: true })
+          const projectRoot = await realpath(ctx.location.directory)
+          const stageRoot = await realpath(outDir)
+          if (!stageRoot.startsWith(projectRoot + sep)) {
+            await ctx.session.synthetic({
+              sessionID,
+              text: "Parts refused: the staging directory resolves outside the project.",
+              description: "feral-parts",
+              resume: true,
+            })
+            return
+          }
           await writeFile(join(outDir, "parts-plan.md"), rawPlans.join("\n\n---\n\n"))
           if (!specs) {
             await ctx.session.synthetic({
@@ -234,9 +253,11 @@ export default Plugin.define({
                 ctx,
                 `${PREAMBLE}\n\nOutput only the complete contents of ${relative}. No prose, no code fences, no explanations.\n\nBrief: ${brief}`,
               )
-              const target = join(ctx.location.directory, relative)
+              const content = stripFence(text)
+              if (!content.trim()) continue
+              const target = join(outDir, relative)
               await mkdir(dirname(target), { recursive: true })
-              await writeFile(target, stripFence(text))
+              await writeFile(target, content, { flag: "wx" })
               written.push(relative)
             } catch {
               // skip failed component
@@ -244,7 +265,7 @@ export default Plugin.define({
           }
           await ctx.session.synthetic({
             sessionID,
-            text: `Parts wrote ${written.length}/${specs.length} files: ${written.join(", ")}`,
+            text: `Parts staged ${written.length}/${specs.length} files in ${outDir}: ${written.join(", ")}\nReview them before copying into the project.`,
             description: "feral-parts",
             resume: true,
           })

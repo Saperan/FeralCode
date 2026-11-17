@@ -30,7 +30,11 @@
         { "action": "*", "resource": "*", "effect": "allow" },
         { "action": "shell", "resource": "git push*", "effect": "ask" },
         { "action": "shell", "resource": "rm -rf*", "effect": "ask" },
-        { "action": "read", "resource": "**/.env*", "effect": "ask" }
+        { "action": "read", "resource": "**/.env*", "effect": "ask" },
+        { "action": "write", "resource": ".git/**", "effect": "ask" },
+        { "action": "edit", "resource": ".git/**", "effect": "ask" },
+        { "action": "write", "resource": ".env*", "effect": "ask" },
+        { "action": "edit", "resource": ".env*", "effect": "ask" }
       ]
     },
 

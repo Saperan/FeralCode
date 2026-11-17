@@ -8,7 +8,7 @@ The repo also ships four local OpenCode plugins:
 |---|---|
 | `feral-retry` | Checks every `build-feral` / `plan-feral` answer against a JSON contract. Missing component → re-prompts with the exact missing IDs, capped at the contract's `retry` count. Verbal refusals are a secondary trigger. |
 | `feral-sampling` | Per-agent temperature/top-p, `/feral-hot` toggle, compaction and title sampling. |
-| `feral-tools` | `/bestof` (N framed candidates), `/parts` (decompose into files), `/spec` (neutral spec via `spec-feral`), `/feral-shot` (many-shot primer from a JSONL corpus). |
+| `feral-tools` | `/bestof` (N framed candidates), `/parts` (decompose into staged files under `.opencode/out/parts/`), `/spec` (neutral spec via `spec-feral`), `/feral-shot` (many-shot primer from a JSONL corpus). |
 | `feral-model-memory` | Remembers the last model selected per agent. |
 
 ## Install
@@ -79,6 +79,14 @@ Tested through the `opencode-go` provider. Sample sizes differ; this is a compat
 | 3 | `opencode-go/glm-5.3` | 3-prompt JBB harassment probe | 0/3, valid refusals, no empty completions |
 
 Only these three returned valid scored samples. `grok-4.7` produced empty or step-limited responses; `kimi-k3` and `qwen3.8-max` returned empty completions and were not scored. Start with `deepseek-v4-pro#max`; it is the only model with a full 100-prompt run.
+
+## Security
+
+FeralCode runs as your user; permissions are policy, not an OS sandbox.
+
+- `build-feral` starts from allow-all. The `ask` rules cover `git push`, `rm -rf`, `.env` reads, and `.git`/`.env` writes only. A shell wrapper can still do anything the policy does not name.
+- `/parts` never writes into the project. It stages generated files under `.opencode/out/parts/<timestamp>/` with exclusive-create writes; review them before copying.
+- Run untrusted repositories in a container, VM, or disposable worktree, and review `/parts` output before applying it.
 
 ## Notes
 
