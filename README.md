@@ -16,7 +16,7 @@ The repo also ships four local OpenCode plugins:
 Requires OpenCode V2.
 
 ```bash
-git clone https://github.com/saperan/feral-opencode.git
+git clone https://github.com/Saperan/FeralCode.git
 cd feral-opencode
 ./install.sh
 ```
@@ -83,7 +83,7 @@ cd feral-opencode
 git init -b main
 git add .
 git commit -m "feral for opencode"
-git remote add origin https://github.com/saperan/feral-opencode.git
+git remote add origin https://github.com/Saperan/FeralCode.git
 git push -u origin main
 ```
 
