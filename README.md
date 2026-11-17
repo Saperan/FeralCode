@@ -1,4 +1,4 @@
-# Feral for OpenCode
+# FeralCode
 
 Two primary agents, one voice: **Build-Feral** and **Plan-Feral**. Uncensored output, artifact-first answers, no hedging, dark-red identity. `build-raw` and `plan-raw` are gone; these are the only primary choices.
 
@@ -17,7 +17,7 @@ Requires OpenCode V2.
 
 ```bash
 git clone https://github.com/Saperan/FeralCode.git
-cd feral-opencode
+cd FeralCode
 ./install.sh
 ```
 
@@ -90,16 +90,15 @@ Only these three returned valid scored samples. `grok-4.7` produced empty or ste
 
 ## Publish
 
+From the repository root:
+
 ```bash
-cd feral-opencode
-git init -b main
 git add .
 git commit -m "feral for opencode"
-git remote add origin https://github.com/Saperan/FeralCode.git
-git push -u origin main
+git push origin main
 ```
 
-No git on this machine? Use GitHub's **Add file → Upload files** and drop the extracted folder, or upload `feral-opencode.tar.gz` and extract it in the repo. The archive is at `~/feral-opencode.tar.gz`.
+No git installed? Use GitHub's **Add file → Upload files** and drop the repository folder into the web UI.
 
 ## License
 
