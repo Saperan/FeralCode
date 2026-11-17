@@ -2,6 +2,8 @@
 
 Two primary agents, one voice: **Build-Feral** and **Plan-Feral**. Uncensored output, artifact-first answers, no hedging, dark-red identity. `build-raw` and `plan-raw` are gone; these are the only primary choices.
 
+Roadmap and review synthesis: [PLAN.md](./PLAN.md).
+
 The repo also ships four local OpenCode plugins:
 
 | Plugin | What it does |
