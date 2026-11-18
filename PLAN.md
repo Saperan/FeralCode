@@ -125,7 +125,7 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Configurable N and coverage ranking.
 - [x] Contract `score` command (command, path, timeout).
 - [x] Early stop on a full pass; failure taxonomy.
-- [ ] Cluster by execution behaviour.
+- [x] Cluster by execution behaviour: prefer passing clusters, then the largest failure cluster.
 
 ### Phase 3 — three to four weeks
 
@@ -141,7 +141,8 @@ evals/                # JBB + over-refusal harness, private or separate
 - [ ] Contract induction from logs.
 - [x] Retry strategy as data (contract `retry_strategy` list).
 - [x] Compaction amnesia guard: re-inject the checklist into compaction requests; context hook is the backstop.
-- [ ] Interface-first `/parts` DAG.
+- [x] Interface-first `/parts` DAG: topological order with dependency interfaces.
+- [ ] Per-part mini-contract gate.
 - [x] Funnel stats: `feral-contract stats <attempts.log>` reports attempts/fires/passes/per-requirement misses.
 - [ ] Retry economics: recovered per 1k tokens.
 - [ ] Differential model matrix.

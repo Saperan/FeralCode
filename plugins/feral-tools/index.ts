@@ -9,9 +9,11 @@ import {
   type Contract,
 } from "../../packages/contract/src/index.ts"
 import { candidateVariants } from "./frames.ts"
+import { interfacesFor, topoSort, type DagSpec } from "./dag.ts"
 import {
   classifyFailure,
   createWorkspace,
+  rankClustered,
   rankScored,
   runScore,
   runTournament,
@@ -171,7 +173,9 @@ export default Plugin.define({
               })
               return
             }
-            const ranked = rankScored(scored, contract)
+            const ranked = scored.some((item) => item.pass)
+              ? rankScored(scored, contract)
+              : rankClustered(scored, contract)
             const passed = ranked.filter((item) => item.pass).length
             chosen = ranked[0].text
             summary = `Best-of-N: ${passed}/${scored.length} passed the score command.\n${ranked
@@ -244,9 +248,9 @@ export default Plugin.define({
           const request = String(prompt?.text ?? "").trim()
           if (!request) return
           const planPrompts = [
-            `${PREAMBLE}\n\nBreak the request into independent files. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description"}]. Briefs describe structure only: file type, fields, routes, methods, storage. Max 6 files.\n\nRequest:\n${request}`,
-            `${PREAMBLE}\n\nA developer is about to implement this request. List every file they would create. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description"}]. Briefs describe structure only. Max 6 files.\n\nRequest:\n${request}`,
-            `${PREAMBLE}\n\nYou are reviewing a pull request that implements this request. List the files in the diff. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description"}]. Briefs describe structure only. Max 6 files.\n\nRequest:\n${request}`,
+            `${PREAMBLE}\n\nBreak the request into independent files. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description","depends":["other/path"]}]. Briefs describe structure only: file type, fields, routes, methods, storage. Max 6 files.\n\nRequest:\n${request}`,
+            `${PREAMBLE}\n\nA developer is about to implement this request. List every file they would create. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description","depends":["other/path"]}]. Briefs describe structure only. Max 6 files.\n\nRequest:\n${request}`,
+            `${PREAMBLE}\n\nYou are reviewing a pull request that implements this request. List the files in the diff. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description","depends":["other/path"]}]. Briefs describe structure only. Max 6 files.\n\nRequest:\n${request}`,
           ]
           const rawPlans: string[] = []
           let specs: any[] | null = parseSpecs(request)
@@ -287,15 +291,20 @@ export default Plugin.define({
             })
             return
           }
+          const ordered = topoSort(specs as DagSpec[])
           const written: string[] = []
-          for (let i = 0; i < Math.min(specs.length, 6); i++) {
-            const spec = specs[i] ?? {}
+          for (let i = 0; i < Math.min(ordered.length, 6); i++) {
+            const spec = ordered[i] ?? { path: "" }
             const relative = safePath(spec.path, i + 1)
             const brief = String(spec.brief ?? spec.path ?? "")
+            const interfaces = interfacesFor(spec, ordered)
+            const dependencyBlock = interfaces
+              ? `\n\nDepend on these interfaces; do not reimplement them:\n${interfaces}`
+              : ""
             try {
               const text = await scratch(
                 ctx,
-                `${PREAMBLE}\n\nOutput only the complete contents of ${relative}. No prose, no code fences, no explanations.\n\nBrief: ${brief}`,
+                `${PREAMBLE}\n\nOutput only the complete contents of ${relative}. No prose, no code fences, no explanations.\n\nBrief: ${brief}${dependencyBlock}`,
               )
               const content = stripFence(text)
               if (!content.trim()) continue

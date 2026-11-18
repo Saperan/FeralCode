@@ -48,6 +48,24 @@ export function rankScored(candidates: Scored[], contract: Contract | null): Sco
   })
 }
 
+export function clusterScored(candidates: Scored[]): Scored[][] {
+  const groups = new Map<string, Scored[]>()
+  for (const candidate of candidates) {
+    const key = candidate.pass ? "pass" : (candidate.failureKind ?? "unknown")
+    groups.set(key, [...(groups.get(key) ?? []), candidate])
+  }
+  return [...groups.values()].sort((a, b) => {
+    const aPass = a[0]?.pass ? 1 : 0
+    const bPass = b[0]?.pass ? 1 : 0
+    if (aPass !== bPass) return bPass - aPass
+    return b.length - a.length
+  })
+}
+
+export function rankClustered(candidates: Scored[], contract: Contract | null): Scored[] {
+  return clusterScored(candidates).flatMap((cluster) => rankScored(cluster, contract))
+}
+
 export async function runTournament<T>(
   candidates: Iterable<T>,
   score: (candidate: T) => Promise<Scored>,

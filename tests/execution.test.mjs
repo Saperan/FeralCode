@@ -6,7 +6,9 @@ import { join } from "node:path"
 import { candidateVariants } from "../plugins/feral-tools/frames.ts"
 import {
   classifyFailure,
+  clusterScored,
   createWorkspace,
+  rankClustered,
   rankScored,
   runScore,
   runTournament,
@@ -110,4 +112,21 @@ test("runTournament pulls lazily and stops on the first pass", async () => {
   assert.equal(scored.length, 2)
   assert.equal(scored[1].pass, true)
 })
+
+test("clusterScored prefers passes and the largest failure cluster", () => {
+  const candidates = [
+    { text: "compile-one", pass: false, exitCode: 1, output: "SyntaxError", failureKind: "compile" },
+    { text: "compile-two", pass: false, exitCode: 1, output: "SyntaxError", failureKind: "compile" },
+    { text: "test-one", pass: false, exitCode: 1, output: "assert", failureKind: "test" },
+    { text: "pass-one", pass: true, exitCode: 0, output: "", failureKind: "pass" },
+  ]
+  const clusters = clusterScored(candidates)
+  assert.equal(clusters[0][0].failureKind, "pass")
+  assert.equal(clusters[1][0].failureKind, "compile")
+  assert.equal(clusters[1].length, 2)
+  const ranked = rankClustered(candidates, null)
+  assert.equal(ranked[0].failureKind, "pass")
+  assert.equal(ranked[1].failureKind, "compile")
+})
+
 
