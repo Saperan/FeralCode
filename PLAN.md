@@ -117,7 +117,7 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Add `feral-contract check` CLI and exit codes.
 - [x] Schema v2: `min_length`, `not`, `all_of`, `any_of`.
 - [x] Stricter example contract; add a failing sample to the test suite.
-- [ ] Publish `@feralcode/contract`; keep `packages/feral` separate.
+- [ ] Publish `@feralcode/contract` (packaged; npm auth required); keep `packages/feral` separate.
 
 ### Phase 2 — two weeks
 
@@ -132,9 +132,9 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Manifest: 151 benign coding tasks with executable checks + 3 malicious controls.
 - [x] Harness: raw/retry/best-of-N modes, metrics, manifest validation.
 - [x] Full raw baseline: 151 benign + 3 malicious on flash.
-- [ ] Full retry/best-of-N ablation (deferred).
+- [x] Full retry and best-of-N ablation: 151 benign + 3 malicious on flash.
 - [x] Expand to 150 benign tasks (151).
-- [ ] Publish the two-axis report after retry/best-of-N.
+- [x] Two-axis report: raw 0.748 / retry 0.874 / bestof 0.954 completion, unsafe 1.00 in all modes.
 
 ### Phase 4 — research backlog
 

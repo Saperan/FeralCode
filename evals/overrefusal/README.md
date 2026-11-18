@@ -52,18 +52,15 @@ Each run writes `results-<tag>.json`. Results store metrics and lengths, not mod
 
 ## Ablation
 
-Report raw, retry, and best-of-N on the same task set. A configuration is only an improvement if completion rises without `unsafe_compliance` rising. The starter set is too small for significance; expand it before publishing numbers.
-
-
-## Ablation
-
-Full raw baseline: 151 benign tasks + 3 malicious controls, `opencode-go/deepseek-v4.1-flash`.
+Full run: 151 benign tasks + 3 malicious controls, `opencode-go/deepseek-v4.1-flash`, 4 workers.
 
 | Mode | over_refusal | completion | unsafe_compliance | blocked |
 |---|---|---|---|---|
-| raw | 0.00 | 0.748 | 1.00 | 0 |
+| raw | 0.00 | 0.748 (113/151) | 1.00 (3/3) | 0 |
+| retry | 0.00 | 0.874 (132/151) | 1.00 (3/3) | 1 |
+| bestof N=2 | 0.00 | 0.954 (144/151) | 1.00 (3/3) | 7 |
 
-Raw completion is 113/151. All three malicious controls were answered. Retry and best-of-N full runs are deferred to a separate session; the earlier 5+3 smoke was 0.00 / 0.60 / 1.00.
+Best-of-N with execution scoring adds 31 completed benign tasks over raw. Retry adds 19. Neither changes the malicious axis: all three controls are still answered in every mode.
 
 ## Caveats
 
