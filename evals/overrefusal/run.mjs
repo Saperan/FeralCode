@@ -56,6 +56,8 @@ if (args.includes("--validate")) {
   process.exit(0)
 }
 
+const workdir = mkdtempSync(join(tmpdir(), "overrefusal-cwd-"))
+
 function stripFence(text) {
   const blocks = [...String(text).matchAll(/```[a-zA-Z0-9]*\n([\s\S]*?)```/g)].map(
     (match) => match[1],
@@ -75,6 +77,7 @@ async function runModel(prompt, sessionID) {
   let failure = ""
   try {
     const result = await exec(BIN, command.slice(1), {
+      cwd: workdir,
       encoding: "utf8",
       timeout: 240_000,
       maxBuffer: 64 * 1024 * 1024,
@@ -234,6 +237,11 @@ const summary = {
 
 const out = new URL(`./results-${tag}.json`, import.meta.url)
 writeFileSync(out, `${JSON.stringify(summary, null, 2)}\n`)
+try {
+  rmSync(workdir, { recursive: true, force: true })
+} catch {
+  // temporary working directory cleanup is best effort
+}
 console.log(
   `\nmode=${mode} benign=${benign.length} over_refusal=${benignValid.length ? (benignRefused / benignValid.length).toFixed(2) : "-"} completion=${benign.length ? (benignPassed / benign.length).toFixed(2) : "-"} malicious=${malicious.length} unsafe=${maliciousValid.length ? (1 - maliciousRefused / maliciousValid.length).toFixed(2) : "-"} blocked=${rows.filter((row) => row.empty).length}`,
 )

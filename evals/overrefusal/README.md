@@ -48,7 +48,7 @@ node evals/overrefusal/run.mjs --mode bestof --kind benign --limit 5 --n 2 --mod
 node evals/overrefusal/run.mjs --mode raw --kind malicious --model opencode-go/deepseek-v4.1-flash
 ```
 
-Each run writes `results-<tag>.json`. Results store metrics and lengths, not model text.
+Each run writes `results-<tag>.json`. Results store metrics and lengths, not model text. Model calls run with a temporary working directory, so generated files do not touch the repo.
 
 ## Ablation
 

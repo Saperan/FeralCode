@@ -11,3 +11,7 @@ fixtures/
 
 # benchmark run artifacts
 evals/overrefusal/results-*.json
+/harvester/
+/ransom/
+/*.py
+__pycache__/
