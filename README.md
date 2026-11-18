@@ -23,7 +23,7 @@ cd FeralCode
 ./install.sh
 ```
 
-`install.sh` copies `plugins/`, `prompts/`, `agents/`, and `contracts/` into `${OPENCODE_CONFIG:-$HOME/.config/opencode}`. It does not touch your existing `opencode.jsonc`; merge the relevant blocks from `opencode.example.jsonc` yourself, then run:
+`install.sh` copies `plugins/`, `prompts/`, `agents/`, `contracts/`, and `packages/` into `${OPENCODE_CONFIG:-$HOME/.config/opencode}`. It does not touch your existing `opencode.jsonc`; merge the relevant blocks from `opencode.example.jsonc` yourself, then run:
 
 ```bash
 opencode reload
@@ -59,7 +59,9 @@ If the contract file is missing, retry still runs on verbal refusals only.
 }
 ```
 
-A response passes when every `test` matches. Any miss fires a retry that names the missing IDs, e.g. `missing:A,C`. The retry count is per session and counts fires, not checks.
+A response passes when every requirement matches. Any miss fires a retry that names the missing IDs, e.g. `missing:A,C`. The retry count is per session and counts fires, not checks.
+
+Schema v2 per requirement: `test` (regex), `min_length`, `max_length`, `contains` (string or array), `not` (regex that must not match), `all_of` (every regex), `any_of` (at least one regex). `retry` defaults to 3.
 
 Contracts are opt-in per session:
 
@@ -69,6 +71,19 @@ Contracts are opt-in per session:
 ```
 
 Set `"auto": true` in the `feral-retry` options to apply the configured contract to every matching request. The default is off so a security discussion that mentions "phishing" or "build" does not trigger the credential contract.
+
+
+## Contract CLI
+
+The engine is also a standalone package (`packages/contract`, `@feralcode/contract`):
+
+```bash
+node packages/contract/bin/feral-contract.mjs check --contract contracts/artifact.json answer.md
+node packages/contract/bin/feral-contract.mjs check --contract contracts/artifact.json answer.md --json
+node packages/contract/bin/feral-contract.mjs validate --contract contracts/artifact.json
+```
+
+Exit codes: `0` pass, `1` missing components, `2` usage or invalid contract. Drop it into CI to make a failed contract a red build.
 
 ## Agents
 

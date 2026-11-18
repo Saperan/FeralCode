@@ -1,4 +1,4 @@
-import { missingComponents, type Contract } from "../feral-retry/detector.ts"
+import { missingComponents, type Contract } from "../../packages/contract/src/index.ts"
 
 export function coverage(text: string, contract: Contract | null): number {
   if (!contract) return 0

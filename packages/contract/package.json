@@ -1,0 +1,20 @@
+{
+  "name": "@feralcode/contract",
+  "version": "0.2.0",
+  "description": "Structural contract checks for agent answers: regex, length, contains, not, all_of, any_of.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "feral-contract": "./bin/feral-contract.mjs"
+  },
+  "files": [
+    "src",
+    "bin"
+  ],
+  "engines": {
+    "node": ">=22.6"
+  }
+}

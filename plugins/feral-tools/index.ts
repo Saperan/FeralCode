@@ -7,7 +7,7 @@ import {
   missingComponents,
   refusal,
   type Contract,
-} from "../feral-retry/detector.ts"
+} from "../../packages/contract/src/index.ts"
 import { safePath } from "./paths.ts"
 import { rankCandidates } from "./rank.ts"
 

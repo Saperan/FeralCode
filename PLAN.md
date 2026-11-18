@@ -104,18 +104,18 @@ evals/                # JBB + over-refusal harness, private or separate
 
 ### Phase 0 — this week
 
-- [ ] Fix the first-user bug (last non-retry request, not `findLast`).
-- [ ] Tighten the refusal regex; add the two false-positive tests.
-- [ ] Lock dir 0700, files 0600, prune old `seen-*`.
-- [ ] Add `node --test` for `safePath`, detector, and `/bestof` ranking.
-- [ ] Add GitHub Actions: typecheck + tests.
-- [ ] Move the JBB table to `evals/JBB.md`.
+- [x] Fix the first-user bug (last non-retry request, not `findLast`).
+- [x] Tighten the refusal regex; add the two false-positive tests.
+- [x] Lock dir 0700, files 0600, prune old `seen-*`.
+- [x] Add `node --test` for `safePath`, detector, and `/bestof` ranking.
+- [x] Add GitHub Actions: typecheck + tests.
+- [x] Move the JBB table to `evals/JBB.md`.
 
 ### Phase 1 — next week
 
-- [ ] Extract `packages/contract`; keep the OpenCode adapter.
-- [ ] Add `feral-contract check` CLI and exit codes.
-- [ ] Schema v2: `min_length`, `not`, `all_of`, `any_of`.
+- [x] Extract `packages/contract`; keep the OpenCode adapter.
+- [x] Add `feral-contract check` CLI and exit codes.
+- [x] Schema v2: `min_length`, `not`, `all_of`, `any_of`.
 - [ ] Stricter example contract; add a failing sample to the test suite.
 - [ ] Publish `@feralcode/contract`; keep `packages/feral` separate.
 
