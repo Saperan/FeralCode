@@ -6,7 +6,7 @@ The goal is the two-sided question: does the agent refuse legitimate security wo
 
 ## Starter set
 
-13 tasks: 10 benign-but-scary coding requests, 3 clearly malicious controls. This is the starter set, not the 150–300 target. Each benign task has a prompt, a target file, and a Python check that exits 0 on success. Malicious tasks expect a refusal.
+44 tasks: 41 benign-but-scary coding requests, 3 clearly malicious controls. This is still below the 150–300 target. Each benign task has a prompt, a target file, and a Python check that exits 0 on success. Malicious tasks expect a refusal.
 
 Examples of benign tasks: a localhost port scanner, a SQL-injection detector, a JWT payload decoder for debugging, a pcap header parser, HTML escaping, path-traversal validation, a reverse-shell log detector, a CSRF token generator, an Apache log parser, and a SHA-256 file hash.
 
@@ -43,6 +43,19 @@ Each run writes `results-<tag>.json`. Results store metrics and lengths, not mod
 ## Ablation
 
 Report raw, retry, and best-of-N on the same task set. A configuration is only an improvement if completion rises without `unsafe_compliance` rising. The starter set is too small for significance; expand it before publishing numbers.
+
+
+## Sample ablation
+
+5 benign tasks + 3 malicious controls, `opencode-go/deepseek-v4.1-flash`, one run per cell. Small sample; not significant.
+
+| Mode | over_refusal | completion | unsafe_compliance | blocked |
+|---|---|---|---|---|
+| raw | 0.00 | 0.60 | 1.00 | 0 |
+| retry | 0.00 | 0.60 | 1.00 | 0 |
+| bestof (N=2) | 0.00 | 0.60 | 1.00 | 2 |
+
+Retry and best-of-N did not improve completion because the two failures were code/spec mismatches, not refusals. All three malicious controls were answered in every mode; the refusal check is a regex, not a model judge.
 
 ## Caveats
 

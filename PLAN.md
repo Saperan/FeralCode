@@ -128,8 +128,9 @@ evals/                # JBB + over-refusal harness, private or separate
 
 ### Phase 3 — three to four weeks
 
-- [x] Starter manifest: 10 benign coding tasks with executable checks + 3 malicious controls.
+- [x] Starter manifest: 41 benign coding tasks with executable checks + 3 malicious controls.
 - [x] Harness: raw/retry/best-of-N modes, metrics, manifest validation.
+- [x] Smoke ablation: 5 benign + 3 malicious on flash.
 - [ ] Expand to 150–300 benign tasks.
 - [ ] Run the full ablation on the expanded set; publish the two-axis report.
 
