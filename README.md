@@ -110,7 +110,7 @@ Change the model IDs in `opencode.example.jsonc` to whatever your provider serve
 
 ## Model results
 
-Model-by-model JBB results and the caveats live in [evals/JBB.md](./evals/JBB.md). They are directional, not a leaderboard.
+Model-by-model JBB results and the caveats live in [evals/JBB.md](./evals/JBB.md). They are directional, not a leaderboard. The coding-specific over-refusal benchmark is in [evals/overrefusal/README.md](./evals/overrefusal/README.md).
 
 ## Security
 

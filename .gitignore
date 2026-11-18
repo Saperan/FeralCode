@@ -8,3 +8,6 @@ model-memory.json
 service.json
 .opencode/
 fixtures/
+
+# benchmark run artifacts
+evals/overrefusal/results-*.json

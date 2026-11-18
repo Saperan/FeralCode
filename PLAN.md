@@ -128,10 +128,10 @@ evals/                # JBB + over-refusal harness, private or separate
 
 ### Phase 3 — three to four weeks
 
-- [ ] 150–300 benign-but-scary coding tasks with executable ground truth.
-- [ ] Malicious control arm (JBB).
-- [ ] Run the ablation: retry on/off, best-of-N on/off, contract on/off.
-- [ ] Publish the over-refusal/compliance report; link it from the README.
+- [x] Starter manifest: 10 benign coding tasks with executable checks + 3 malicious controls.
+- [x] Harness: raw/retry/best-of-N modes, metrics, manifest validation.
+- [ ] Expand to 150–300 benign tasks.
+- [ ] Run the full ablation on the expanded set; publish the two-axis report.
 
 ### Phase 4 — research backlog
 
