@@ -26,7 +26,10 @@ export type Contract = {
   retry: number
   match?: string
   score?: Score
+  retry_strategy?: string[]
 }
+
+export const DEFAULT_RETRY_STRATEGY = ["missing", "spec", "code"]
 
 export const DEFAULT_CONTRACT = join(
   homedir(),
@@ -106,6 +109,9 @@ export function loadContract(rawPath?: string): Contract | null {
       ? Math.max(0, Math.trunc(Number(value.retry)))
       : 3
     const match = typeof value.match === "string" && value.match.trim() ? value.match : undefined
+    const retry_strategy = Array.isArray(value.retry_strategy)
+      ? value.retry_strategy.map(String).filter(Boolean)
+      : undefined
     const score =
       value.score && typeof value.score === "object" && typeof value.score.command === "string"
         ? {
@@ -119,10 +125,19 @@ export function loadContract(rawPath?: string): Contract | null {
               : undefined,
           }
         : undefined
-    return { name: String(value.name ?? path), required, retry, match, score }
+    return { name: String(value.name ?? path), required, retry, match, score, retry_strategy }
   } catch {
     return null
   }
+}
+
+export function strategyFor(contract: Contract | null, fireIndex: number): string {
+  const list =
+    contract?.retry_strategy && contract.retry_strategy.length > 0
+      ? contract.retry_strategy
+      : DEFAULT_RETRY_STRATEGY
+  const index = Math.max(0, Math.min(fireIndex, list.length - 1))
+  return list[index] ?? "missing"
 }
 
 export function appliesTo(request: string, contract: Contract | null): boolean {

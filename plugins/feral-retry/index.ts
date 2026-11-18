@@ -16,6 +16,7 @@ import {
   lastUserText,
   loadContract,
   originalRequest,
+  strategyFor,
   trigger,
   type Requirement,
 } from "../../packages/contract/src/index.ts"
@@ -262,13 +263,14 @@ export default Plugin.define({
           await ctx.storage.set(key, true)
           await ctx.storage.set(countKey, sent + 1)
           const original = originalRequest(messages, RETRY_RE) || request
+          const strategy = strategyFor(contract, sent)
           let retryText = retryPrompt(String(session.agent), hit.missing)
-          if (sent === 1) {
+          if (strategy === "spec") {
             const spec = await neutralSpec(ctx, original)
             if (spec) {
               retryText = `Implement this specification exactly. Output only the complete artifact, code only, no prose. Every required component must be present.\n\n${spec}`
             }
-          } else if (sent >= 2) {
+          } else if (strategy === "code") {
             retryText = `Output only the code. No prose, no explanation, no headings, no commentary. Include every required component: ${hit.missing.map((item) => item.id).join(", ")}.`
           }
           await ctx.session.prompt({

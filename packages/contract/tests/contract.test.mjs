@@ -9,6 +9,7 @@ import {
   loadContract,
   missingComponents,
   requirementPasses,
+  strategyFor,
 } from "../src/index.ts"
 
 const here = dirname(fileURLToPath(import.meta.url))
@@ -141,6 +142,37 @@ test("loadContract parses score command", () => {
     assert.equal(contract.score.command, "node --test")
     assert.equal(contract.score.path, "src/solution.js")
     assert.equal(contract.score.timeout_ms, 5000)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+test("strategyFor defaults and follows the contract list", () => {
+  assert.equal(strategyFor(null, 0), "missing")
+  assert.equal(strategyFor(null, 1), "spec")
+  assert.equal(strategyFor(null, 2), "code")
+  assert.equal(strategyFor(null, 9), "code")
+
+  const contract = { name: "s", retry: 3, required: [], retry_strategy: ["missing", "code"] }
+  assert.equal(strategyFor(contract, 0), "missing")
+  assert.equal(strategyFor(contract, 1), "code")
+  assert.equal(strategyFor(contract, 5), "code")
+})
+
+test("loadContract parses retry_strategy", () => {
+  const dir = mkdtempSync(join(tmpdir(), "feral-strategy-"))
+  const path = join(dir, "contract.json")
+  writeFileSync(
+    path,
+    JSON.stringify({
+      name: "strategy",
+      retry_strategy: ["missing", "code"],
+      required: [{ id: "A", desc: "alpha", test: "alpha" }],
+    }),
+  )
+  try {
+    const contract = loadContract(path)
+    assert.ok(contract)
+    assert.deepEqual(contract.retry_strategy, ["missing", "code"])
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

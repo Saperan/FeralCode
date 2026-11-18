@@ -224,7 +224,67 @@ NEW = [
         "collapses runs of whitespace to one space and trims the ends",
         "def normalize_whitespace(s):\n    return ' '.join(s.split())\n",
         [(("  a\n b  ",), "a b")],
+    ),    simple(
+        "parse-json-safe", "data", "parse_json_safe",
+        "parses JSON and returns the value, or None on failure",
+        "import json\ndef parse_json_safe(s):\n    try:\n        return json.loads(s)\n    except Exception:\n        return None\n",
+        [(('{"a": 1}',), {"a": 1}), (("bad",), None)],
     ),
+    simple(
+        "flatten-dict", "data", "flatten_dict",
+        "flattens nested dict keys into dotted paths",
+        "def flatten_dict(d, prefix=''):\n    out = {}\n    for k, v in d.items():\n        key = f'{prefix}.{k}' if prefix else k\n        if isinstance(v, dict):\n            out.update(flatten_dict(v, key))\n        else:\n            out[key] = v\n    return out\n",
+        [(({"a": {"b": 1}},), {"a.b": 1}), (({"a": 1},), {"a": 1})],
+    ),
+    simple(
+        "chunk-list", "data", "chunk_list",
+        "splits a list into chunks of at most n items",
+        "def chunk_list(items, n):\n    return [items[i:i + n] for i in range(0, len(items), n)]\n",
+        [(([1, 2, 3, 4], 2), [[1, 2], [3, 4]]), (([], 3), [])],
+    ),
+    simple(
+        "dedupe-list", "data", "dedupe_list",
+        "removes duplicates while preserving order",
+        "def dedupe_list(items):\n    return list(dict.fromkeys(items))\n",
+        [((["a", "b", "a"],), ["a", "b"]), (([1, 1, 1],), [1])],
+    ),
+    simple(
+        "median", "math", "median",
+        "returns the median of a list, averaging the two middle values",
+        "def median(values):\n    s = sorted(values)\n    n = len(s)\n    if n == 0:\n        return None\n    if n % 2:\n        return s[n // 2]\n    return (s[n // 2 - 1] + s[n // 2]) / 2\n",
+        [(([1, 2, 3],), 2), (([1, 2, 3, 4],), 2.5)],
+    ),
+    simple(
+        "rot13", "encoding", "rot13",
+        "applies the ROT13 substitution",
+        "import codecs\ndef rot13(s):\n    return codecs.decode(s, 'rot13')\n",
+        [(("uryyb",), "hello")],
+    ),
+    simple(
+        "caesar-shift", "encoding", "caesar_shift",
+        "shifts letters by n while preserving case and non-letters",
+        "def caesar_shift(s, n):\n    out = []\n    for ch in s:\n        if ch.isalpha():\n            base = ord('A') if ch.isupper() else ord('a')\n            out.append(chr((ord(ch) - base + n) % 26 + base))\n        else:\n            out.append(ch)\n    return ''.join(out)\n",
+        [(("hello", 3), "khoor"), (("Hi!", 1), "Ij!")],
+    ),
+    simple(
+        "parse-bool", "parsing", "parse_bool",
+        "returns True for true/yes/1, False for false/no/0, else None",
+        "def parse_bool(s):\n    v = s.strip().lower()\n    if v in ('true', 'yes', '1'):\n        return True\n    if v in ('false', 'no', '0'):\n        return False\n    return None\n",
+        [(("yes",), True), (("NO",), False), (("maybe",), None)],
+    ),
+    simple(
+        "parse-int-safe", "parsing", "parse_int_safe",
+        "returns an int or None when parsing fails",
+        "def parse_int_safe(s):\n    try:\n        return int(s)\n    except Exception:\n        return None\n",
+        [(("42",), 42), (("x",), None)],
+    ),
+    simple(
+        "luhn-check", "validation", "luhn_check",
+        "returns True when a digit string passes the Luhn checksum",
+        "def luhn_check(number):\n    digits = [int(c) for c in number if c.isdigit()]\n    total = 0\n    for i, d in enumerate(reversed(digits)):\n        if i % 2 == 1:\n            d *= 2\n            if d > 9:\n                d -= 9\n        total += d\n    return total % 10 == 0\n",
+        [(("79927398713",), True), (("79927398710",), False)],
+    ),
+
 ]
 
 
