@@ -116,7 +116,7 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Extract `packages/contract`; keep the OpenCode adapter.
 - [x] Add `feral-contract check` CLI and exit codes.
 - [x] Schema v2: `min_length`, `not`, `all_of`, `any_of`.
-- [ ] Stricter example contract; add a failing sample to the test suite.
+- [x] Stricter example contract; add a failing sample to the test suite.
 - [ ] Publish `@feralcode/contract`; keep `packages/feral` separate.
 
 ### Phase 2 — two weeks
@@ -124,7 +124,8 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Execution-scored best-of-N in disposable worktrees.
 - [x] Configurable N and coverage ranking.
 - [x] Contract `score` command (command, path, timeout).
-- [ ] Stop on full pass; cluster by execution behaviour; failure taxonomy.
+- [x] Early stop on a full pass; failure taxonomy.
+- [ ] Cluster by execution behaviour.
 
 ### Phase 3 — three to four weeks
 
@@ -141,7 +142,8 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Retry strategy as data (contract `retry_strategy` list).
 - [x] Compaction amnesia guard: re-inject the checklist into compaction requests; context hook is the backstop.
 - [ ] Interface-first `/parts` DAG.
-- [ ] Retry economics and funnel reporting.
+- [x] Funnel stats: `feral-contract stats <attempts.log>` reports attempts/fires/passes/per-requirement misses.
+- [ ] Retry economics: recovered per 1k tokens.
 - [ ] Differential model matrix.
 
 ## Definition of done

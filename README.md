@@ -73,7 +73,7 @@ A contract can also declare an execution score:
 }
 ```
 
-`/bestof` writes each candidate to `path` in a disposable worktree, runs `command`, and ranks by pass, then contract coverage, then length. Set `"variants": 4` and `"execute": true` in the `feral-tools` options to enable it. Without `execute`, it stays text-only.
+`/bestof` generates and scores one candidate at a time in a disposable worktree, stops after the first pass, and reports each failure kind. Without `execute`, it stays text-only and ranks by contract coverage, then length. Set `"variants": 4` and `"execute": true` in the `feral-tools` options to enable execution scoring.
 
 The score command is trusted and runs as your user. The worktree is disposable, not a sandbox; use a container for untrusted code.
 
@@ -97,6 +97,7 @@ The engine is also a standalone package (`packages/contract`, `@feralcode/contra
 node packages/contract/bin/feral-contract.mjs check --contract contracts/artifact.json answer.md
 node packages/contract/bin/feral-contract.mjs check --contract contracts/artifact.json answer.md --json
 node packages/contract/bin/feral-contract.mjs validate --contract contracts/artifact.json
+node packages/contract/bin/feral-contract.mjs stats /tmp/opencode/feral-retry/attempts.log
 ```
 
 Exit codes: `0` pass, `1` missing components, `2` usage or invalid contract. Drop it into CI to make a failed contract a red build.

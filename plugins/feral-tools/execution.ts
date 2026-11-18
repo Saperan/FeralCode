@@ -8,11 +8,35 @@ import { coverage } from "./rank.ts"
 
 const run = promisify(execFile)
 
+export type FailureKind = "pass" | "timeout" | "compile" | "test" | "empty" | "error"
+
 export type Scored = {
   text: string
   pass: boolean
   exitCode: number | null
   output: string
+  failureKind?: FailureKind
+  timedOut?: boolean
+}
+
+export function classifyFailure(
+  output: string,
+  exitCode: number | null,
+  pass: boolean,
+  timedOut = false,
+): FailureKind {
+  if (pass) return "pass"
+  if (timedOut) return "timeout"
+  const text = String(output ?? "")
+  if (!text.trim()) return "empty"
+  if (
+    /(?:SyntaxError|CompileError|error TS\d+|ModuleNotFoundError|ImportError|cannot find module|unexpected token)/i.test(
+      text,
+    )
+  ) {
+    return "compile"
+  }
+  return exitCode === null ? "error" : "test"
 }
 
 export function rankScored(candidates: Scored[], contract: Contract | null): Scored[] {
@@ -22,6 +46,19 @@ export function rankScored(candidates: Scored[], contract: Contract | null): Sco
     if (byCoverage !== 0) return byCoverage
     return b.text.trim().length - a.text.trim().length
   })
+}
+
+export async function runTournament<T>(
+  candidates: Iterable<T>,
+  score: (candidate: T) => Promise<Scored>,
+): Promise<Scored[]> {
+  const results: Scored[] = []
+  for (const candidate of candidates) {
+    const result = await score(candidate)
+    results.push(result)
+    if (result.pass) break
+  }
+  return results
 }
 
 export function safeScorePath(raw: string | undefined): string {
@@ -55,7 +92,7 @@ export async function runScore(
   dir: string,
   command: string,
   timeoutMs = 120_000,
-): Promise<{ pass: boolean; exitCode: number | null; output: string }> {
+): Promise<{ pass: boolean; exitCode: number | null; output: string; timedOut: boolean }> {
   const shell = process.platform === "win32" ? "cmd" : "sh"
   const flag = process.platform === "win32" ? "/c" : "-c"
   try {
@@ -68,16 +105,16 @@ export async function runScore(
       pass: true,
       exitCode: 0,
       output: `${stdout}\n${stderr}`.trim().slice(0, 4000),
+      timedOut: false,
     }
   } catch (error: any) {
     const code = typeof error?.code === "number" ? error.code : null
-    return {
-      pass: false,
-      exitCode: code,
-      output: `${error?.stdout ?? ""}\n${error?.stderr ?? ""}\n${error?.message ?? ""}`
-        .trim()
-        .slice(0, 4000),
-    }
+    const output = `${error?.stdout ?? ""}\n${error?.stderr ?? ""}\n${error?.message ?? ""}`
+      .trim()
+      .slice(0, 4000)
+    const timedOut =
+      Boolean(error?.killed) || /(?:ETIMEDOUT|timed? ?out|timeout)/i.test(output)
+    return { pass: false, exitCode: code, output, timedOut }
   }
 }
 

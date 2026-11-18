@@ -5,9 +5,11 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { candidateVariants } from "../plugins/feral-tools/frames.ts"
 import {
+  classifyFailure,
   createWorkspace,
   rankScored,
   runScore,
+  runTournament,
   safeScorePath,
   writeCandidate,
 } from "../plugins/feral-tools/execution.ts"
@@ -75,3 +77,37 @@ test("createWorkspace writes a candidate and cleans up", async () => {
     rmSync(project, { recursive: true, force: true })
   }
 })
+
+test("classifyFailure covers the full taxonomy", () => {
+  assert.equal(classifyFailure("", 0, true), "pass")
+  assert.equal(classifyFailure("timed out", null, false, true), "timeout")
+  assert.equal(classifyFailure("", 1, false), "empty")
+  assert.equal(classifyFailure("SyntaxError: bad token", 1, false), "compile")
+  assert.equal(classifyFailure("AssertionError: expected 1", 1, false), "test")
+  assert.equal(classifyFailure("boom", null, false), "error")
+})
+
+test("runTournament pulls lazily and stops on the first pass", async () => {
+  let pulls = 0
+  const candidates = {
+    [Symbol.iterator]() {
+      let index = 0
+      return {
+        next() {
+          pulls += 1
+          return index < 4 ? { value: index++, done: false } : { value: undefined, done: true }
+        },
+      }
+    },
+  }
+  const scored = await runTournament(candidates, async (candidate) => ({
+    text: String(candidate),
+    pass: candidate === 1,
+    exitCode: candidate === 1 ? 0 : 1,
+    output: candidate === 1 ? "" : "fail",
+  }))
+  assert.equal(pulls, 2)
+  assert.equal(scored.length, 2)
+  assert.equal(scored[1].pass, true)
+})
+

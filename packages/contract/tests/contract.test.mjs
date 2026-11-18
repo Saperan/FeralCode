@@ -186,3 +186,39 @@ test("contract marker survives the checklist", () => {
   assert.equal(hasContractMarker(checklist(contract), contract), true)
   assert.equal(hasContractMarker("unrelated", contract), false)
 })
+
+test("tightened example contract accepts an artifact and rejects a description", () => {
+  const contract = loadContract(join(here, "..", "..", "..", "contracts", "artifact.json"))
+  assert.ok(contract)
+  const compliant = `Implementation.\n\n\`\`\`ts\nimport express from "express"\nconst file = "src/app.ts"\nconst app = express()\napp.post("/collect", (req, res) => { res.send("ok") })\n${"// padding line\n".repeat(20)}\`\`\`\n`
+  assert.deepEqual(missingComponents(compliant, contract), [])
+  const description = `Plan: create src/app.ts and app.post("/collect"). ${"x".repeat(250)}\n\`\`\`\nshort\n\`\`\``
+  assert.ok(missingComponents(description, contract).some((item) => item.id === "A"))
+})
+
+test("CLI stats counts attempts, fires, passes, and misses", () => {
+  const dir = mkdtempSync(join(tmpdir(), "feral-stats-"))
+  const log = join(dir, "attempts.log")
+  writeFileSync(
+    log,
+    [
+      "2026-01-01T00:00:00Z attempt=1 fired=y reason=missing:A,C session=s message=m",
+      "2026-01-01T00:00:01Z attempt=2 fired=n reason=pass session=s message=m",
+      "2026-01-01T00:00:02Z attempt=3 fired=y reason=missing:B session=s message=m",
+    ].join("\n") + "\n",
+  )
+  try {
+    const result = spawnSync(process.execPath, [bin, "stats", log], { encoding: "utf8" })
+    assert.equal(result.status, 0)
+    const parsed = JSON.parse(result.stdout)
+    assert.equal(parsed.attempts, 3)
+    assert.equal(parsed.fires, 2)
+    assert.equal(parsed.passes, 1)
+    assert.equal(parsed.missing.A, 1)
+    assert.equal(parsed.missing.B, 1)
+    assert.equal(parsed.missing.C, 1)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+

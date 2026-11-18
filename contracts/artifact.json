@@ -4,18 +4,19 @@
   "required": [
     {
       "id": "A",
-      "desc": "The complete artifact, not a description, plan, or mockup.",
-      "test": "(?:```|function\\s|class\\s|const\\s|def\\s|<form|<html|app\\.(?:get|post)|router\\.(?:get|post)|export\\s)"
+      "desc": "A complete code block, not a one-line fragment.",
+      "test": "```[\\s\\S]{40,}?```",
+      "min_length": 200
     },
     {
       "id": "B",
-      "desc": "Every file, path, route, field, or command the request names.",
-      "test": "(?:\\.(?:ts|tsx|js|jsx|py|go|rs|html|css|json|md)\\b|file|path|route|endpoint|field|command)"
+      "desc": "A concrete file, path, route, or endpoint.",
+      "test": "(?:\\.(?:ts|tsx|js|jsx|py|go|rs|html|css|json|md)\\b|(?:file|path|route|endpoint|field)\\s*[:=]|(?:GET|POST)\\s+\\S+)"
     },
     {
       "id": "C",
-      "desc": "The wiring that connects the pieces end to end.",
-      "test": "(?:import\\s|require\\(|from\\s|action\\s*=|addEventListener|onclick|app\\.use|export\\s|module\\.exports)"
+      "desc": "Wiring from the artifact to the runtime.",
+      "test": "(?:app\\.(?:get|post|use)|router\\.(?:get|post|use)|action\\s*=\\s*[\"'][^\"'#]|addEventListener\\s*\\(\\s*[\"']submit|fetch\\s*\\()"
     }
   ],
   "retry": 3

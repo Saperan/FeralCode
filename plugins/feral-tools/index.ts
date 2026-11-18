@@ -9,7 +9,14 @@ import {
   type Contract,
 } from "../../packages/contract/src/index.ts"
 import { candidateVariants } from "./frames.ts"
-import { createWorkspace, rankScored, runScore, writeCandidate, type Scored } from "./execution.ts"
+import {
+  classifyFailure,
+  createWorkspace,
+  rankScored,
+  runScore,
+  runTournament,
+  writeCandidate,
+} from "./execution.ts"
 import { safePath } from "./paths.ts"
 import { rankCandidates } from "./rank.ts"
 
@@ -104,62 +111,93 @@ export default Plugin.define({
     await ctx.command.transform((editor) => {
       editor.add({
         name: "bestof",
-        description: "Sample four framed attempts in a scratch session and rank by contract coverage",
+        description:
+          "Sample N framed attempts in a scratch session and rank by contract coverage or execution score",
         execute: async ({ sessionID, prompt }: any) => {
           const request = String(prompt?.text ?? "").trim()
           if (!request) return
           const contract = loadContract(contractPath)
           const criteria = contract?.required.map((item) => item.desc) ?? []
-          const results: string[] = []
-          for (const candidate of candidateVariants(request, criteria, variantCount)) {
-            try {
-              results.push(await scratch(ctx, candidate))
-            } catch {
-              // skip failed candidate
-            }
-          }
-          if (results.length === 0) {
-            await ctx.session.synthetic({
-              sessionID,
-              text: "Best-of-N failed: no candidate produced output.",
-              description: "feral-bestof",
-              resume: true,
-            })
-            return
-          }
+          const prompts = candidateVariants(request, criteria, variantCount)
           const dir = join(ctx.location.directory, ".opencode", "out")
           await mkdir(dir, { recursive: true })
           const file = join(dir, `bestof-${Date.now()}.md`)
+          const score = contract?.score
 
           let chosen = ""
           let summary = ""
-          const score = contract?.score
+
           if (executeScores && score?.command) {
-            const scored: Scored[] = []
-            for (const text of results) {
-              const workspace = await createWorkspace(ctx.location.directory, "bestof")
+            const scored = await runTournament(prompts, async (candidate) => {
               try {
-                await writeCandidate(workspace.dir, score.path, text)
-                const result = await runScore(
-                  workspace.dir,
-                  score.command,
-                  score.timeout_ms,
-                )
-                scored.push({ text, ...result })
-              } finally {
-                await workspace.cleanup()
+                const text = await scratch(ctx, candidate)
+                const workspace = await createWorkspace(ctx.location.directory, "bestof")
+                try {
+                  await writeCandidate(workspace.dir, score.path, text)
+                  const result = await runScore(
+                    workspace.dir,
+                    score.command,
+                    score.timeout_ms,
+                  )
+                  return {
+                    text,
+                    ...result,
+                    failureKind: classifyFailure(
+                      result.output,
+                      result.exitCode,
+                      result.pass,
+                      result.timedOut,
+                    ),
+                  }
+                } finally {
+                  await workspace.cleanup()
+                }
+              } catch (error) {
+                return {
+                  text: "",
+                  pass: false,
+                  exitCode: null,
+                  output: String(error).slice(0, 4000),
+                  failureKind: "error" as const,
+                }
               }
+            })
+            if (scored.length === 0) {
+              await ctx.session.synthetic({
+                sessionID,
+                text: "Best-of-N failed: no candidate produced output.",
+                description: "feral-bestof",
+                resume: true,
+              })
+              return
             }
             const ranked = rankScored(scored, contract)
             const passed = ranked.filter((item) => item.pass).length
             chosen = ranked[0].text
-            summary = `Best-of-N: ${passed}/${results.length} passed the score command.\n${ranked
+            summary = `Best-of-N: ${passed}/${scored.length} passed the score command.\n${ranked
               .map(
                 (item, index) =>
-                  `${index + 1}. ${item.pass ? "PASS" : "FAIL"}${item.exitCode === null ? "" : ` exit=${item.exitCode}`}`,
+                  `${index + 1}. ${item.pass ? "PASS" : "FAIL"} ${item.failureKind ?? "unknown"}${item.exitCode === null ? "" : ` exit=${item.exitCode}`}`,
               )
               .join("\n")}\nSaved to `
           } else {
+            const results: string[] = []
+            for (const candidate of prompts) {
+              try {
+                results.push(await scratch(ctx, candidate))
+              } catch {
+                // skip failed candidate
+              }
+            }
+            if (results.length === 0) {
+              await ctx.session.synthetic({
+                sessionID,
+                text: "Best-of-N failed: no candidate produced output.",
+                description: "feral-bestof",
+                resume: true,
+              })
+              return
+            }
             const passing = results.filter((text) => compliant(text, contract))
             chosen = rankCandidates(passing.length > 0 ? passing : results, contract)[0]
             summary = `Best-of-N: ${passing.length}/${results.length} candidates passed. Saved to `
