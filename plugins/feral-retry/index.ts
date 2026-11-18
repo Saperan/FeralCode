@@ -13,6 +13,8 @@ import {
   DEFAULT_CONTRACT,
   appliesTo,
   checklist,
+  contractMarker,
+  hasContractMarker,
   lastUserText,
   loadContract,
   originalRequest,
@@ -184,7 +186,7 @@ export default Plugin.define({
       if (!contract) return
       const request = lastUserText(event.messages)
       if (!request || !appliesTo(request, contract)) return
-      const marker = `<required-components contract="${contract.name}">`
+      const marker = contractMarker(contract)
       if (event.system.some((part) => part.type === "text" && part.text.includes(marker))) return
       event.system.push({ type: "text", text: checklist(contract) })
       try {
@@ -192,6 +194,29 @@ export default Plugin.define({
         appendFileSync(
           join(LOCK_DIR, "context.log"),
           `${new Date().toISOString()} injected=${contract.name} session=${event.sessionID}\n`,
+          { mode: 0o600 },
+        )
+      } catch {
+        // logging is best effort
+      }
+    })
+
+    await ctx.session.hook("compaction", async (event) => {
+      if (!enabledByOption) return
+      if ((await ctx.storage.get(ENABLED_KEY)) === false) return
+      const path = await activeContract(event.sessionID)
+      if (!path) return
+      const contract = loadContract(path)
+      if (!contract) return
+      const present = event.system.some(
+        (part) => part.type === "text" && hasContractMarker(part.text, contract),
+      )
+      if (!present) event.system.push({ type: "text", text: checklist(contract) })
+      try {
+        ensureLockDir()
+        appendFileSync(
+          join(LOCK_DIR, "context.log"),
+          `${new Date().toISOString()} compaction session=${event.sessionID} contract=${contract.name} injected=${present ? "n" : "y"}\n`,
           { mode: 0o600 },
         )
       } catch {

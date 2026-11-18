@@ -77,6 +77,8 @@ A contract can also declare an execution score:
 
 The score command is trusted and runs as your user. The worktree is disposable, not a sandbox; use a container for untrusted code.
 
+Compaction preserves the active contract: the compaction hook re-injects the checklist, and the context hook remains the per-request backstop.
+
 Contracts are opt-in per session:
 
 ```text

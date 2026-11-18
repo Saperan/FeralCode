@@ -139,7 +139,7 @@ evals/                # JBB + over-refusal harness, private or separate
 
 - [ ] Contract induction from logs.
 - [x] Retry strategy as data (contract `retry_strategy` list).
-- [ ] Compaction amnesia detector.
+- [x] Compaction amnesia guard: re-inject the checklist into compaction requests; context hook is the backstop.
 - [ ] Interface-first `/parts` DAG.
 - [ ] Retry economics and funnel reporting.
 - [ ] Differential model matrix.

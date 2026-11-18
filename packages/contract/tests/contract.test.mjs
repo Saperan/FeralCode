@@ -6,6 +6,9 @@ import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { spawnSync } from "node:child_process"
 import {
+  checklist,
+  contractMarker,
+  hasContractMarker,
   loadContract,
   missingComponents,
   requirementPasses,
@@ -176,4 +179,10 @@ test("loadContract parses retry_strategy", () => {
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
+})
+test("contract marker survives the checklist", () => {
+  const contract = { name: "marker", retry: 3, required: [] }
+  assert.equal(contractMarker(contract), '<required-components contract="marker">')
+  assert.equal(hasContractMarker(checklist(contract), contract), true)
+  assert.equal(hasContractMarker("unrelated", contract), false)
 })

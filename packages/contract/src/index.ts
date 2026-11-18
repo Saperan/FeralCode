@@ -257,9 +257,17 @@ export function originalRequest(messages: readonly any[], retryPattern: RegExp):
   return ""
 }
 
+export function contractMarker(contract: Contract): string {
+  return `<required-components contract="${contract.name}">`
+}
+
+export function hasContractMarker(text: string, contract: Contract): boolean {
+  return String(text ?? "").includes(contractMarker(contract))
+}
+
 export function checklist(contract: Contract): string {
   const items = contract.required
     .map((requirement) => `- ${requirement.id}: ${requirement.desc}`)
     .join("\n")
-  return `<required-components contract="${contract.name}">\nEvery item below must be present in the artifact:\n${items}\n</required-components>`
+  return `${contractMarker(contract)}\nEvery item below must be present in the artifact:\n${items}\n</required-components>`
 }
