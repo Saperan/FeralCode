@@ -121,10 +121,10 @@ evals/                # JBB + over-refusal harness, private or separate
 
 ### Phase 2 — two weeks
 
-- [ ] Execution-scored best-of-N in disposable worktrees.
-- [ ] Configurable N; stop on full pass; coverage rank.
-- [ ] Cluster by execution behaviour; failure taxonomy.
-- [ ] Add a contract `score` command.
+- [x] Execution-scored best-of-N in disposable worktrees.
+- [x] Configurable N and coverage ranking.
+- [x] Contract `score` command (command, path, timeout).
+- [ ] Stop on full pass; cluster by execution behaviour; failure taxonomy.
 
 ### Phase 3 — three to four weeks
 

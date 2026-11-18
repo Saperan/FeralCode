@@ -10,7 +10,7 @@ The repo also ships four local OpenCode plugins:
 |---|---|
 | `feral-retry` | Checks every `build-feral` / `plan-feral` answer against a JSON contract. Missing component → re-prompts with the exact missing IDs, capped at the contract's `retry` count. Contracts are opt-in per session with `/feral-contract`; verbal refusals are a secondary trigger. |
 | `feral-sampling` | Per-agent temperature/top-p, `/feral-hot` toggle, compaction and title sampling. |
-| `feral-tools` | `/bestof` (N framed candidates), `/parts` (decompose into staged files under `.opencode/out/parts/`), `/spec` (neutral spec via `spec-feral`), `/feral-shot` (many-shot primer from a JSONL corpus). |
+| `feral-tools` | `/bestof` (N framed candidates, optional execution scoring), `/parts` (decompose into staged files under `.opencode/out/parts/`), `/spec` (neutral spec via `spec-feral`), `/feral-shot` (many-shot primer from a JSONL corpus). |
 | `feral-model-memory` | Remembers the last model selected per agent. |
 
 ## Install
@@ -62,6 +62,20 @@ If the contract file is missing, retry still runs on verbal refusals only.
 A response passes when every requirement matches. Any miss fires a retry that names the missing IDs, e.g. `missing:A,C`. The retry count is per session and counts fires, not checks.
 
 Schema v2 per requirement: `test` (regex), `min_length`, `max_length`, `contains` (string or array), `not` (regex that must not match), `all_of` (every regex), `any_of` (at least one regex). `retry` defaults to 3.
+
+A contract can also declare an execution score:
+
+```jsonc
+"score": {
+  "command": "npm test -- --runInBand",
+  "path": "src/solution.ts",
+  "timeout_ms": 120000
+}
+```
+
+`/bestof` writes each candidate to `path` in a disposable worktree, runs `command`, and ranks by pass, then contract coverage, then length. Set `"variants": 4` and `"execute": true` in the `feral-tools` options to enable it. Without `execute`, it stays text-only.
+
+The score command is trusted and runs as your user. The worktree is disposable, not a sandbox; use a container for untrusted code.
 
 Contracts are opt-in per session:
 

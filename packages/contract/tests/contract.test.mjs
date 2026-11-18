@@ -124,3 +124,24 @@ test("CLI check and validate", () => {
     rmSync(dir, { recursive: true, force: true })
   }
 })
+test("loadContract parses score command", () => {
+  const dir = mkdtempSync(join(tmpdir(), "feral-score-contract-"))
+  const path = join(dir, "contract.json")
+  writeFileSync(
+    path,
+    JSON.stringify({
+      name: "score",
+      score: { command: "node --test", path: "src/solution.js", timeout_ms: 5000 },
+      required: [{ id: "A", desc: "alpha", test: "alpha" }],
+    }),
+  )
+  try {
+    const contract = loadContract(path)
+    assert.ok(contract)
+    assert.equal(contract.score.command, "node --test")
+    assert.equal(contract.score.path, "src/solution.js")
+    assert.equal(contract.score.timeout_ms, 5000)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})

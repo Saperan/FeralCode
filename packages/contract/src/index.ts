@@ -14,11 +14,18 @@ export type Requirement = {
   any_of?: string[]
 }
 
+export type Score = {
+  command: string
+  path?: string
+  timeout_ms?: number
+}
+
 export type Contract = {
   name: string
   required: Requirement[]
   retry: number
   match?: string
+  score?: Score
 }
 
 export const DEFAULT_CONTRACT = join(
@@ -99,7 +106,20 @@ export function loadContract(rawPath?: string): Contract | null {
       ? Math.max(0, Math.trunc(Number(value.retry)))
       : 3
     const match = typeof value.match === "string" && value.match.trim() ? value.match : undefined
-    return { name: String(value.name ?? path), required, retry, match }
+    const score =
+      value.score && typeof value.score === "object" && typeof value.score.command === "string"
+        ? {
+            command: value.score.command,
+            path:
+              typeof value.score.path === "string" && value.score.path.trim()
+                ? value.score.path
+                : undefined,
+            timeout_ms: Number.isFinite(Number(value.score.timeout_ms))
+              ? Number(value.score.timeout_ms)
+              : undefined,
+          }
+        : undefined
+    return { name: String(value.name ?? path), required, retry, match, score }
   } catch {
     return null
   }

@@ -14,7 +14,9 @@
     {
       "package": "./plugins/feral-tools",
       "options": {
-        "contract": "~/.config/opencode/contracts/artifact.json"
+        "contract": "~/.config/opencode/contracts/artifact.json",
+        "variants": 4,
+        "execute": false
       }
     }
   ],
