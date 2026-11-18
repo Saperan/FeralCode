@@ -11,11 +11,11 @@ export const DEFAULT_CONTRACT = join(
   ".config",
   "opencode",
   "contracts",
-  "artifact.json",
+  "credential-capture.json",
 )
 
 export const REFUSAL =
-  /\b(?:I (?:can['’]t|cannot|won['’]t|will not|am not able|must decline|am not comfortable)|I['’]m not (?:able|going to|comfortable)|I['’]d rather not)\b/i
+  /\b(?:I (?:can['’]t|cannot|won['’]t|will not)\s+(?:help|assist|provide|comply|continue|do that|write|give|create|share|support)|I['’]m not (?:able|going) to\s+(?:help|assist|provide|comply)|I['’]d rather not\s+(?:help|assist|provide|comply)|I must decline)\b/i
 
 export function expandPath(raw: string): string {
   const value = String(raw ?? "").trim()
@@ -104,6 +104,32 @@ export function lastUserText(messages: readonly any[]): string {
       return ""
     }
     if (message?.type === "user" && typeof message.text === "string") return message.text
+  }
+  return ""
+}
+
+function messageText(message: any): string {
+  if (!message) return ""
+  if (typeof message.text === "string") return message.text
+  if (message.role === "user" || message.type === "user") {
+    const content = message.content
+    if (typeof content === "string") return content
+    if (Array.isArray(content)) {
+      return content
+        .filter((part: any) => part?.type === "text" && typeof part.text === "string")
+        .map((part: any) => part.text)
+        .join("\n")
+    }
+  }
+  return ""
+}
+
+export function originalRequest(messages: readonly any[], retryPattern: RegExp): string {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i]
+    if (message?.type !== "user" && message?.role !== "user") continue
+    const text = messageText(message).trim()
+    if (text && !retryPattern.test(text)) return text
   }
   return ""
 }

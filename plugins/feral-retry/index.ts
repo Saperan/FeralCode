@@ -1,5 +1,13 @@
 import { Plugin } from "@opencode/plugin"
-import { appendFileSync, mkdirSync, writeFileSync } from "node:fs"
+import {
+  appendFileSync,
+  chmodSync,
+  mkdirSync,
+  readdirSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs"
 import { join } from "node:path"
 import {
   DEFAULT_CONTRACT,
@@ -7,6 +15,7 @@ import {
   checklist,
   lastUserText,
   loadContract,
+  originalRequest,
   trigger,
   type Requirement,
 } from "./detector.ts"
@@ -27,11 +36,37 @@ const ENABLED_KEY = "feral.retry.enabled"
 const DEFAULT_RETRY = 3
 const LOCK_DIR = "/tmp/opencode/feral-retry"
 const LOG = join(LOCK_DIR, "attempts.log")
+const SEEN_MAX_AGE = 7 * 24 * 60 * 60 * 1000
+
+function ensureLockDir() {
+  mkdirSync(LOCK_DIR, { recursive: true, mode: 0o700 })
+  try {
+    chmodSync(LOCK_DIR, 0o700)
+  } catch {
+    // best effort
+  }
+}
+
+function pruneSeen() {
+  try {
+    for (const name of readdirSync(LOCK_DIR)) {
+      if (!name.startsWith("seen-")) continue
+      const path = join(LOCK_DIR, name)
+      try {
+        if (Date.now() - statSync(path).mtimeMs > SEEN_MAX_AGE) unlinkSync(path)
+      } catch {
+        // best effort
+      }
+    }
+  } catch {
+    // best effort
+  }
+}
 
 function claim(sessionID: string, messageID: string): boolean {
   try {
-    mkdirSync(LOCK_DIR, { recursive: true })
-    writeFileSync(join(LOCK_DIR, `${sessionID}-${messageID}`), "", { flag: "wx" })
+    ensureLockDir()
+    writeFileSync(join(LOCK_DIR, `${sessionID}-${messageID}`), "", { flag: "wx", mode: 0o600 })
     return true
   } catch {
     return false
@@ -40,8 +75,8 @@ function claim(sessionID: string, messageID: string): boolean {
 
 function alreadyEvaluated(sessionID: string, messageID: string): boolean {
   try {
-    mkdirSync(LOCK_DIR, { recursive: true })
-    writeFileSync(join(LOCK_DIR, `seen-${sessionID}-${messageID}`), "", { flag: "wx" })
+    ensureLockDir()
+    writeFileSync(join(LOCK_DIR, `seen-${sessionID}-${messageID}`), "", { flag: "wx", mode: 0o600 })
     return false
   } catch {
     return true
@@ -50,10 +85,11 @@ function alreadyEvaluated(sessionID: string, messageID: string): boolean {
 
 function log(attempt: number, fired: boolean, reason: string, sessionID: string, messageID: string) {
   try {
-    mkdirSync(LOCK_DIR, { recursive: true })
+    ensureLockDir()
     appendFileSync(
       LOG,
       `${new Date().toISOString()} attempt=${attempt} fired=${fired ? "y" : "n"} reason=${reason} session=${sessionID} message=${messageID}\n`,
+      { mode: 0o600 },
     )
   } catch {
     // logging is best effort
@@ -99,12 +135,21 @@ export default Plugin.define({
   async setup(ctx) {
     const options = (
       ctx as unknown as {
-        options?: { contract?: string; enabled?: boolean; retry?: boolean }
+        options?: { contract?: string; enabled?: boolean; retry?: boolean; auto?: boolean }
       }
     ).options
     const contractPath = String(options?.contract ?? DEFAULT_CONTRACT)
     const enabledByOption = options?.enabled !== false
     const retryByOption = options?.retry !== false
+    const auto = options?.auto === true
+    const contractKey = (sessionID: string) => `feral.contract/${sessionID}`
+    const activeContract = async (sessionID: string) => {
+      const stored = await ctx.storage.get(contractKey(sessionID))
+      if (typeof stored === "string" && stored.trim()) return stored.trim()
+      return auto ? contractPath : ""
+    }
+    ensureLockDir()
+    pruneSeen()
 
     await ctx.command.transform((editor) => {
       editor.add({
@@ -115,12 +160,26 @@ export default Plugin.define({
           await ctx.storage.set(ENABLED_KEY, !enabled)
         },
       })
+      editor.add({
+        name: "feral-contract",
+        description: "Enable the retry contract for this session, or 'off' to disable it",
+        execute: async ({ sessionID, prompt }: any) => {
+          const arg = String(prompt?.text ?? "").trim()
+          if (!arg || arg === "off" || arg === "none") {
+            await ctx.storage.remove(contractKey(sessionID))
+            return
+          }
+          await ctx.storage.set(contractKey(sessionID), arg === "on" ? contractPath : arg)
+        },
+      })
     })
 
     await ctx.session.hook("context", async (event) => {
       if (!enabledByOption) return
       if ((await ctx.storage.get(ENABLED_KEY)) === false) return
-      const contract = loadContract(contractPath)
+      const path = await activeContract(event.sessionID)
+      if (!path) return
+      const contract = loadContract(path)
       if (!contract) return
       const request = lastUserText(event.messages)
       if (!request || !appliesTo(request, contract)) return
@@ -128,10 +187,11 @@ export default Plugin.define({
       if (event.system.some((part) => part.type === "text" && part.text.includes(marker))) return
       event.system.push({ type: "text", text: checklist(contract) })
       try {
-        mkdirSync(LOCK_DIR, { recursive: true })
+        ensureLockDir()
         appendFileSync(
           join(LOCK_DIR, "context.log"),
           `${new Date().toISOString()} injected=${contract.name} session=${event.sessionID}\n`,
+          { mode: 0o600 },
         )
       } catch {
         // logging is best effort
@@ -162,7 +222,8 @@ export default Plugin.define({
           if (alreadyEvaluated(sessionID, lastAssistant.id)) continue
           const text = String(textPart.text ?? "")
 
-          const contract = loadContract(contractPath)
+          const path = await activeContract(sessionID)
+          const contract = path ? loadContract(path) : null
           const max = contract?.retry ?? DEFAULT_RETRY
           const countKey = `feral.retry.count/${sessionID}`
           const sent = Number((await ctx.storage.get(countKey)) ?? 0)
@@ -200,9 +261,7 @@ export default Plugin.define({
 
           await ctx.storage.set(key, true)
           await ctx.storage.set(countKey, sent + 1)
-          const original = String(
-            messages.find((message) => message.type === "user")?.text ?? request,
-          )
+          const original = originalRequest(messages, RETRY_RE) || request
           let retryText = retryPrompt(String(session.agent), hit.missing)
           if (sent === 1) {
             const spec = await neutralSpec(ctx, original)

@@ -8,7 +8,7 @@ The repo also ships four local OpenCode plugins:
 
 | Plugin | What it does |
 |---|---|
-| `feral-retry` | Checks every `build-feral` / `plan-feral` answer against a JSON contract. Missing component → re-prompts with the exact missing IDs, capped at the contract's `retry` count. Verbal refusals are a secondary trigger. |
+| `feral-retry` | Checks every `build-feral` / `plan-feral` answer against a JSON contract. Missing component → re-prompts with the exact missing IDs, capped at the contract's `retry` count. Contracts are opt-in per session with `/feral-contract`; verbal refusals are a secondary trigger. |
 | `feral-sampling` | Per-agent temperature/top-p, `/feral-hot` toggle, compaction and title sampling. |
 | `feral-tools` | `/bestof` (N framed candidates), `/parts` (decompose into staged files under `.opencode/out/parts/`), `/spec` (neutral spec via `spec-feral`), `/feral-shot` (many-shot primer from a JSONL corpus). |
 | `feral-model-memory` | Remembers the last model selected per agent. |
@@ -61,6 +61,15 @@ If the contract file is missing, retry still runs on verbal refusals only.
 
 A response passes when every `test` matches. Any miss fires a retry that names the missing IDs, e.g. `missing:A,C`. The retry count is per session and counts fires, not checks.
 
+Contracts are opt-in per session:
+
+```text
+/feral-contract ~/.config/opencode/contracts/artifact.json
+/feral-contract off
+```
+
+Set `"auto": true` in the `feral-retry` options to apply the configured contract to every matching request. The default is off so a security discussion that mentions "phishing" or "build" does not trigger the credential contract.
+
 ## Agents
 
 - **build-feral** — primary, `#991b1b`, full tools, 60 steps.
@@ -70,17 +79,9 @@ A response passes when every `test` matches. Any miss fires a retry that names t
 
 Change the model IDs in `opencode.example.jsonc` to whatever your provider serves.
 
-## Tested models
+## Model results
 
-Tested through the `opencode-go` provider. Sample sizes differ; this is a compatibility ranking, not a leaderboard.
-
-| Rank | Model | Test | Result |
-|---|---|---|---|
-| 1 | `opencode-go/deepseek-v4-pro#max` | Full JBB, 100 prompts; 20-prompt retry fixture | JBB 23/100 raw, 38/100 with the many-shot ensemble; retry fixture 4/20 → 16/20 |
-| 2 | `opencode-go/deepseek-v4.1-flash` | 10-prompt JBB malware slice; 6-prompt JBB harassment probe; `spec-feral` and judge | 4/10 raw malware, 0/6 raw harassment; reliable tool-free spec/judge model |
-| 3 | `opencode-go/glm-5.3` | 3-prompt JBB harassment probe | 0/3, valid refusals, no empty completions |
-
-Only these three returned valid scored samples. `grok-4.7` produced empty or step-limited responses; `kimi-k3` and `qwen3.8-max` returned empty completions and were not scored. Start with `deepseek-v4-pro#max`; it is the only model with a full 100-prompt run.
+Model-by-model JBB results and the caveats live in [evals/JBB.md](./evals/JBB.md). They are directional, not a leaderboard.
 
 ## Security
 
