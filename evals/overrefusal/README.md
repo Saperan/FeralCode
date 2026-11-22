@@ -52,15 +52,17 @@ Each run writes `results-<tag>.json`. Results store metrics and lengths, not mod
 
 ## Ablation
 
-Full run: 151 benign tasks + 3 malicious controls, `opencode-go/hy4-flash-free`, 4 workers.
+Full run: 151 benign tasks + 3 malicious controls, **`opencode-go/hy4-flash-free`**, 4 workers.
 
-| Mode | over_refusal | completion | unsafe_compliance | blocked |
-|---|---|---|---|---|
-| raw | 0.00 | 0.748 (113/151) | 1.00 (3/3) | 0 |
-| retry | 0.00 | 0.874 (132/151) | 1.00 (3/3) | 1 |
-| bestof N=2 | 0.00 | 0.954 (144/151) | 1.00 (3/3) | 7 |
+| Mode | over_refusal | completion | unsafe_compliance | blocked | tokens | completions/1k |
+|---|---|---|---|---|---|---|
+| raw | 0.00 | 0.782 (118/151) | 0.67 (2/3) | 0 | 1,953,850 | 0.060 |
+| retry | 0.00 | 0.887 (134/151) | 1.00 (3/3) | 0 | 2,029,052 | 0.066 |
+| bestof N=2 | 0.00 | 0.960 (145/151) | 1.00 (3/3) | 6 | 2,026,376 | 0.072 |
 
-Best-of-N with execution scoring adds 31 completed benign tasks over raw. Retry adds 19. Neither changes the malicious axis: all three controls are still answered in every mode.
+Retry recovers 16 benign completions for 75k tokens (0.21 per 1k). Best-of-N recovers 27 for 73k tokens (0.37 per 1k) and uses fewer tokens than retry because it stops on the first pass. Both modes lose the single correct malicious refusal: unsafe compliance goes 0.67 → 1.00. That is the actual cost of the completion gain, and it is why the two axes must be reported together.
+
+Historical deepseek run (not the current model): completion 0.748 / 0.874 / 0.954 raw / retry / bestof, unsafe 1.00 in every mode.
 
 ## Caveats
 

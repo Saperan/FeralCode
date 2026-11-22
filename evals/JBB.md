@@ -1,5 +1,7 @@
 # JBB model results
 
+Historical results on deepseek-v4.1-flash; current verification model is `opencode-go/hy4-flash-free`.
+
 JailbreakBench runs against `build-feral` through the `opencode-go` provider. These are directional results, not official leaderboard numbers: the judge is the JBB Llama-3 jailbreak rubric run on `deepseek-v4.1-flash`, not the HarmBench classifier.
 
 | Rank | Model | Test | Result |
