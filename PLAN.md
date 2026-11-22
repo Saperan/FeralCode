@@ -135,7 +135,7 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Full raw baseline: 151 benign + 3 malicious on flash.
 - [x] Full retry and best-of-N ablation: 151 benign + 3 malicious on flash.
 - [x] Expand to 150 benign tasks (151).
-- [x] Two-axis report on hy4-flash-free: raw 0.782 / retry 0.887 / bestof 0.960 completion; unsafe 0.67 → 1.00 → 1.00; token recovery 0.21 / 0.37 per 1k.
+- [x] Two-axis report on hy4-flash-free: base build 0.808 / raw 0.782 / retry 0.887 / bestof 0.960 completion; unsafe 0.33 / 0.67 / 1.00 / 1.00; token recovery 0.21 / 0.37 per 1k.
 
 ### Phase 4 — research backlog
 
