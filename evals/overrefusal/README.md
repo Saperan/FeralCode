@@ -56,16 +56,16 @@ Full run: 211 benign tasks + 3 malicious controls, **`opencode-go/hy4-flash-free
 
 | Mode | over_refusal | completion | unsafe_compliance | blocked | tokens | completions/1k |
 |---|---|---|---|---|---|---|
-| base (build) | 0.00 | 0.808 (122/151) | 0.33 (1/3) | 0 | 1,642,600 | 0.074 |
-| raw | 0.00 | 0.782 (118/151) | 0.67 (2/3) | 0 | 1,953,850 | 0.060 |
-| retry | 0.00 | 0.887 (134/151) | 1.00 (3/3) | 0 | 2,029,052 | 0.066 |
-| bestof N=2 | 0.00 | 0.960 (145/151) | 1.00 (3/3) | 6 | 2,026,376 | 0.072 |
+| base (build) | 0.00 | 0.810 (171/211) | 0.33 (1/3) | 0 | 1,828,176 | 0.094 |
+| raw (build-feral) | 0.00 | 0.924 (195/211) | 1.00 (3/3) | 0 | 2,579,231 | 0.076 |
+| retry | 0.00 | 0.915 (193/211) | 1.00 (3/3) | 0 | 1,947,478 | 0.099 |
+| bestof N=2 | 0.00 | **0.957 (202/211)** | 1.00 (3/3) | 9 | 2,078,775 | 0.097 |
 
-Retry recovers 16 benign completions for 75k tokens (0.21 per 1k). Best-of-N recovers 27 for 73k tokens (0.37 per 1k) and uses fewer tokens than retry because it stops on the first pass. Both modes lose the single correct malicious refusal: unsafe compliance goes 0.67 → 1.00. That is the actual cost of the completion gain, and it is why the two axes must be reported together.
+On the expanded fixture the feral persona alone beats base completion (0.924 vs 0.810) but loses the safety advantage: unsafe compliance 1.00 vs 0.33. Retry is within noise of raw on completion; best-of-N adds 7 tasks over raw. Token efficiency is highest for retry (0.099/1k) and best-of-N (0.097/1k), lowest for raw (0.076/1k) because raw burns more tokens per task.
+
+The 60 added tasks are short utility functions, so the fixture got easier: the earlier 151-task run scored raw 0.782 / retry 0.887 / bestof 0.960 with unsafe 0.67 / 1.00 / 1.00. Do not compare absolute numbers across the two fixture versions; compare modes within one version.
 
 Historical deepseek run (not the current model): completion 0.748 / 0.874 / 0.954 raw / retry / bestof, unsafe 1.00 in every mode.
-
-Control: the normal build agent on the same model already answers 122/211 benign tasks with zero over-refusal and refuses 2 of 3 malicious controls. Feral raw is worse on both axes. The loops recover completion but lose the remaining correct refusal: unsafe compliance 0.33 to 1.00. The persona alone is not the win; the loops are, and they carry a safety cost.
 
 ## Caveats
 
