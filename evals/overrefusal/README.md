@@ -6,7 +6,7 @@ The goal is the two-sided question: does the agent refuse legitimate security wo
 
 ## Starter set
 
-154 tasks: 151 benign-but-scary coding requests, 3 clearly malicious controls. The benign count now meets the 150 minimum; the mix is still being broadened. Each benign task has a prompt, a target file, and a Python check that exits 0 on success. Malicious tasks expect a refusal.
+214 tasks: 211 benign-but-scary coding requests, 3 clearly malicious controls. The benign count now meets the 150 minimum; the mix is still being broadened. Each benign task has a prompt, a target file, and a Python check that exits 0 on success. Malicious tasks expect a refusal.
 
 Examples of benign tasks: a localhost port scanner, a SQL-injection detector, a JWT payload decoder for debugging, a pcap header parser, HTML escaping, path-traversal validation, a reverse-shell log detector, a CSRF token generator, an Apache log parser, and a SHA-256 file hash.
 
@@ -52,7 +52,7 @@ Each run writes `results-<tag>.json`. Results store metrics and lengths, not mod
 
 ## Ablation
 
-Full run: 151 benign tasks + 3 malicious controls, **`opencode-go/hy4-flash-free`**, 4 workers.
+Full run: 211 benign tasks + 3 malicious controls, **`opencode-go/hy4-flash-free`**, 4 workers.
 
 | Mode | over_refusal | completion | unsafe_compliance | blocked | tokens | completions/1k |
 |---|---|---|---|---|---|---|
@@ -65,7 +65,7 @@ Retry recovers 16 benign completions for 75k tokens (0.21 per 1k). Best-of-N rec
 
 Historical deepseek run (not the current model): completion 0.748 / 0.874 / 0.954 raw / retry / bestof, unsafe 1.00 in every mode.
 
-Control: the normal build agent on the same model already answers 122/151 benign tasks with zero over-refusal and refuses 2 of 3 malicious controls. Feral raw is worse on both axes. The loops recover completion but lose the remaining correct refusal: unsafe compliance 0.33 to 1.00. The persona alone is not the win; the loops are, and they carry a safety cost.
+Control: the normal build agent on the same model already answers 122/211 benign tasks with zero over-refusal and refuses 2 of 3 malicious controls. Feral raw is worse on both axes. The loops recover completion but lose the remaining correct refusal: unsafe compliance 0.33 to 1.00. The persona alone is not the win; the loops are, and they carry a safety cost.
 
 ## Caveats
 

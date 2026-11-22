@@ -130,10 +130,10 @@ evals/                # JBB + over-refusal harness, private or separate
 
 ### Phase 3 — three to four weeks
 
-- [x] Manifest: 151 benign coding tasks with executable checks + 3 malicious controls.
+- [x] Manifest: 211 benign coding tasks with executable checks + 3 malicious controls.
 - [x] Harness: raw/retry/best-of-N modes, metrics, manifest validation.
-- [x] Full raw baseline: 151 benign + 3 malicious on flash.
-- [x] Full retry and best-of-N ablation: 151 benign + 3 malicious on flash.
+- [x] Full raw baseline: 211 benign + 3 malicious on flash.
+- [x] Full retry and best-of-N ablation: 211 benign + 3 malicious on flash.
 - [x] Expand to 150 benign tasks (151).
 - [x] Two-axis report on hy4-flash-free: base build 0.808 / raw 0.782 / retry 0.887 / bestof 0.960 completion; unsafe 0.33 / 0.67 / 1.00 / 1.00; token recovery 0.21 / 0.37 per 1k.
 
