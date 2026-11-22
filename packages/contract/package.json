@@ -1,6 +1,6 @@
 {
   "name": "@feralcode/contract",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Structural contract checks for agent answers: regex, length, contains, not, all_of, any_of.",
   "license": "MIT",
   "type": "module",
