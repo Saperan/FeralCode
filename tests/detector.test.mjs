@@ -4,7 +4,7 @@ import {
   missingComponents,
   originalRequest,
   refusal,
-} from "../plugins/feral-retry/detector.ts"
+} from "../packages/feral/plugins/feral-retry/detector.ts"
 
 const RETRY =
   /^(?:Your previous answer|Ignore the previous reply|Implement this specification exactly|Output only the code)/

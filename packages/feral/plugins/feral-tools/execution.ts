@@ -3,7 +3,7 @@ import { access, cp, mkdir, mkdtemp, rm, symlink, writeFile } from "node:fs/prom
 import { tmpdir } from "node:os"
 import { dirname, join, resolve, sep } from "node:path"
 import { promisify } from "node:util"
-import type { Contract } from "../../packages/contract/src/index.ts"
+import type { Contract } from "../../../contract/src/index.ts"
 import { coverage } from "./rank.ts"
 
 const run = promisify(execFile)

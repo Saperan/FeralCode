@@ -3,7 +3,7 @@ import assert from "node:assert/strict"
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { candidateVariants } from "../plugins/feral-tools/frames.ts"
+import { candidateVariants } from "../packages/feral/plugins/feral-tools/frames.ts"
 import {
   classifyFailure,
   clusterScored,
@@ -14,7 +14,7 @@ import {
   runTournament,
   safeScorePath,
   writeCandidate,
-} from "../plugins/feral-tools/execution.ts"
+} from "../packages/feral/plugins/feral-tools/execution.ts"
 
 const contract = {
   name: "test",

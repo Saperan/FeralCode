@@ -4,8 +4,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "nod
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { refusal } from "../../packages/contract/src/index.ts"
-import { safeScorePath } from "../../plugins/feral-tools/execution.ts"
-import { candidateVariants } from "../../plugins/feral-tools/frames.ts"
+import { safeScorePath } from "../../packages/feral/plugins/feral-tools/execution.ts"
+import { candidateVariants } from "../../packages/feral/plugins/feral-tools/frames.ts"
 
 const BIN = process.env.OPENCODE_BIN ?? "/home/saperan/.opencode/bin/opencode"
 const exec = promisify(execFile)

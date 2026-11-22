@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { interfacesFor, topoSort } from "../plugins/feral-tools/dag.ts"
+import { interfacesFor, topoSort } from "../packages/feral/plugins/feral-tools/dag.ts"
 
 test("topoSort orders dependencies before dependents", () => {
   const specs = [

@@ -1,19 +1,25 @@
 #!/usr/bin/env node
-import { readFileSync } from "node:fs"
+import { readFileSync, readdirSync, writeFileSync } from "node:fs"
+import { join } from "node:path"
 import { loadContract, missingComponents } from "../src/index.ts"
 
 function usage() {
   console.error("usage: feral-contract check --contract <path> <answer.md> [--json]")
   console.error("       feral-contract validate --contract <path>")
   console.error("       feral-contract stats <attempts.log>")
+  console.error("       feral-contract induce --good <dir> --bad <dir> [--name <name>] [--out <path>]")
   process.exit(2)
 }
 
 const [command, ...rest] = process.argv.slice(2)
-if (command !== "check" && command !== "validate" && command !== "stats") usage()
+if (command !== "check" && command !== "validate" && command !== "stats" && command !== "induce") usage()
 
 let contractPath = ""
 let answerPath = ""
+let goodDir = ""
+let badDir = ""
+let outPath = ""
+let name = "induced"
 let json = false
 
 for (let index = 0; index < rest.length; index++) {
@@ -26,7 +32,89 @@ for (let index = 0; index < rest.length; index++) {
     json = true
     continue
   }
+  if (arg === "--good") {
+    goodDir = rest[++index] ?? ""
+    continue
+  }
+  if (arg === "--bad") {
+    badDir = rest[++index] ?? ""
+    continue
+  }
+  if (arg === "--out") {
+    outPath = rest[++index] ?? ""
+    continue
+  }
+  if (arg === "--name") {
+    name = rest[++index] ?? "induced"
+    continue
+  }
   if (!answerPath) answerPath = arg
+}
+
+if (command === "induce") {
+  if (!goodDir || !badDir) usage()
+  const readAnswers = (dir) =>
+    readdirSync(dir)
+      .filter((file) => /\.(?:md|txt|ts|js|py)$/.test(file))
+      .map((file) => readFileSync(join(dir, file), "utf8"))
+  const good = readAnswers(goodDir)
+  const bad = readAnswers(badDir)
+  if (good.length === 0 || bad.length === 0) {
+    console.error("induce needs at least one good and one bad answer")
+    process.exit(2)
+  }
+  const features = [
+    { id: "A", desc: "A complete fenced code block.", test: "```[\\s\\S]{40,}?```" },
+    { id: "B", desc: "A concrete file or path.", test: "\\.(?:ts|tsx|js|jsx|py|go|rs|html|css|json|md)\\b" },
+    {
+      id: "C",
+      desc: "Wiring to a route or handler.",
+      test: "(?:app\\.(?:get|post|use)|router\\.(?:get|post|use)|action\\s*=\\s*[\"'][^\"'#]|fetch\\s*\\()",
+    },
+    { id: "D", desc: "A test or assertion.", test: "(?:test\\s*\\(|describe\\s*\\(|assert\\s*\\()" },
+    { id: "E", desc: "An import or require.", test: "(?:import\\s|require\\()" },
+  ]
+  const required = features.filter(
+    (feature) =>
+      good.every((text) => new RegExp(feature.test, "i").test(text)) &&
+      !bad.some((text) => new RegExp(feature.test, "i").test(text)),
+  )
+  if (required.length === 0) {
+    required.push({ id: "A", desc: "A non-trivial artifact.", test: "[\\s\\S]{40,}" })
+  }
+  const minLength = Math.min(...good.map((text) => text.trim().length))
+  if (minLength > 0) {
+    required[0].min_length = Math.max(40, Math.floor(minLength * 0.5))
+  }
+  const phrases = [
+    "I can't help",
+    "here is a plan",
+    "connect this to your backend",
+    "wire this up yourself",
+    "mockup",
+  ]
+  const phrase = phrases.find(
+    (value) =>
+      bad.every((text) => text.toLowerCase().includes(value)) &&
+      good.every((text) => !text.toLowerCase().includes(value)),
+  )
+  if (phrase) {
+    required.push({
+      id: "NOT",
+      desc: "No placeholder refusal language.",
+      not: phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+    })
+  }
+  const induced = {
+    name,
+    match: "(?:build|write|create|implement|add|fix|route|file)",
+    required,
+    retry: 3,
+  }
+  const output = `${JSON.stringify(induced, null, 2)}\n`
+  if (outPath) writeFileSync(outPath, output)
+  else process.stdout.write(output)
+  process.exit(0)
 }
 
 if (command === "stats") {

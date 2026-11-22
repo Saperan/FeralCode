@@ -117,7 +117,8 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Add `feral-contract check` CLI and exit codes.
 - [x] Schema v2: `min_length`, `not`, `all_of`, `any_of`.
 - [x] Stricter example contract; add a failing sample to the test suite.
-- [ ] Publish `@feralcode/contract` (packaged; npm auth required); keep `packages/feral` separate.
+- [x] Split `packages/feral` (agents, prompts, plugins) from `packages/contract`.
+- [ ] Publish `@feralcode/contract` (packaged; npm auth required).
 
 ### Phase 2 — two weeks
 
@@ -138,7 +139,7 @@ evals/                # JBB + over-refusal harness, private or separate
 
 ### Phase 4 — research backlog
 
-- [ ] Contract induction from logs.
+- [x] Contract induction: `feral-contract induce --good <dir> --bad <dir>` mines regex features and a `not` phrase.
 - [x] Retry strategy as data (contract `retry_strategy` list).
 - [x] Compaction amnesia guard: re-inject the checklist into compaction requests; context hook is the backstop.
 - [x] Interface-first `/parts` DAG: topological order with dependency interfaces.

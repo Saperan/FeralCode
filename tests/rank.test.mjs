@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { coverage, rankCandidates } from "../plugins/feral-tools/rank.ts"
+import { coverage, rankCandidates } from "../packages/feral/plugins/feral-tools/rank.ts"
 
 const contract = {
   name: "test",

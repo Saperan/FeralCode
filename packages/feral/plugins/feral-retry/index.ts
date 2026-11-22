@@ -21,7 +21,7 @@ import {
   strategyFor,
   trigger,
   type Requirement,
-} from "../../packages/contract/src/index.ts"
+} from "../../../contract/src/index.ts"
 
 const REQUEST =
   /\b(write|give me|create|build|make|generate|draft|provide|show me|explain how|how do i|how to|implement|set up|scan|bypass|pick|plan|design|architect|outline|map out|capture|intercept|forward|relay|store|record|proxy|clone|wire|exfiltrate|harvest|add|attach|inject|modify|hook)\b/i

@@ -2,7 +2,7 @@ import {
   loadContract,
   missingComponents,
   type Contract,
-} from "../../packages/contract/src/index.ts"
+} from "../../../contract/src/index.ts"
 
 export type GateResult = { pass: boolean; missing: string[] }
 

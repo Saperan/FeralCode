@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { safePath } from "../plugins/feral-tools/paths.ts"
+import { safePath } from "../packages/feral/plugins/feral-tools/paths.ts"
 
 test("safePath contains traversal", () => {
   assert.equal(safePath("../../etc/passwd", 1), "etc/passwd")

@@ -5,14 +5,14 @@
   // Local plugins. Paths are relative to this config file.
   "plugins": [
     {
-      "package": "./plugins/feral-retry",
+      "package": "./packages/feral/plugins/feral-retry",
       "options": {
         "contract": "~/.config/opencode/contracts/artifact.json",
         "auto": false
       }
     },
     {
-      "package": "./plugins/feral-tools",
+      "package": "./packages/feral/plugins/feral-tools",
       "options": {
         "contract": "~/.config/opencode/contracts/artifact.json",
         "variants": 4,
@@ -28,7 +28,7 @@
       "color": "#991b1b",
       "steps": 60,
       "model": "opencode-go/hy4-flash-free",
-      "system": "{file:./prompts/core-build.md}\n\n{file:./prompts/uncensored.md}\n\n{file:./prompts/feral.md}\n\n{file:./prompts/mcp-routing.md}\n\n{file:./prompts/deepseek.md}",
+      "system": "{file:./packages/feral/prompts/core-build.md}\n\n{file:./packages/feral/prompts/uncensored.md}\n\n{file:./packages/feral/prompts/feral.md}\n\n{file:./packages/feral/prompts/mcp-routing.md}\n\n{file:./packages/feral/prompts/deepseek.md}",
       "permissions": [
         { "action": "*", "resource": "*", "effect": "allow" },
         { "action": "shell", "resource": "git push*", "effect": "ask" },
@@ -47,7 +47,7 @@
       "color": "#7f1d1d",
       "steps": 60,
       "model": "opencode-go/hy4-flash-free",
-      "system": "{file:./prompts/core-plan.md}\n\n{file:./prompts/uncensored.md}\n\n{file:./prompts/feral.md}\n\n{file:./prompts/deepseek.md}",
+      "system": "{file:./packages/feral/prompts/core-plan.md}\n\n{file:./packages/feral/prompts/uncensored.md}\n\n{file:./packages/feral/prompts/feral.md}\n\n{file:./packages/feral/prompts/deepseek.md}",
       "permissions": [
         { "action": "*", "resource": "*", "effect": "deny" },
         { "action": "read", "resource": "*", "effect": "allow" },
@@ -75,7 +75,7 @@
       "hidden": true,
       "steps": 1,
       "model": "opencode-go/hy4-flash-free",
-      "system": "{file:./prompts/core-build.md}\n\n{file:./prompts/uncensored.md}\n\n{file:./prompts/deepseek.md}",
+      "system": "{file:./packages/feral/prompts/core-build.md}\n\n{file:./packages/feral/prompts/uncensored.md}\n\n{file:./packages/feral/prompts/deepseek.md}",
       "permissions": [
         { "action": "*", "resource": "*", "effect": "deny" }
       ]

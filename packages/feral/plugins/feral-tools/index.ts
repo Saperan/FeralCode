@@ -7,7 +7,7 @@ import {
   missingComponents,
   refusal,
   type Contract,
-} from "../../packages/contract/src/index.ts"
+} from "../../../contract/src/index.ts"
 import { candidateVariants } from "./frames.ts"
 import { interfacesFor, topoSort, type DagSpec } from "./dag.ts"
 import { gateFor, gateText } from "./contract_gate.ts"

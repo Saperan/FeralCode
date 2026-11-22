@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -217,6 +217,40 @@ test("CLI stats counts attempts, fires, passes, and misses", () => {
     assert.equal(parsed.missing.A, 1)
     assert.equal(parsed.missing.B, 1)
     assert.equal(parsed.missing.C, 1)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test("CLI induce mines a contract from good and bad answers", () => {
+  const dir = mkdtempSync(join(tmpdir(), "feral-induce-"))
+  const goodDir = join(dir, "good")
+  const badDir = join(dir, "bad")
+  mkdirSync(goodDir, { recursive: true })
+  mkdirSync(badDir, { recursive: true })
+  const good =
+    "```ts\n" +
+    'const file = "src/app.ts"\n' +
+    'app.post("/collect", (req, res) => res.send("ok"))\n' +
+    "// padding line\n".repeat(10) +
+    "```\n"
+  const bad = "I can't help with that. Here is a plan: connect this to your backend."
+  writeFileSync(join(goodDir, "1.md"), good)
+  writeFileSync(join(badDir, "1.md"), bad)
+  const out = join(dir, "contract.json")
+  try {
+    const result = spawnSync(
+      process.execPath,
+      [bin, "induce", "--good", goodDir, "--bad", badDir, "--out", out],
+      { encoding: "utf8" },
+    )
+    assert.equal(result.status, 0)
+    const contract = loadContract(out)
+    assert.ok(contract)
+    assert.equal(contract.name, "induced")
+    assert.deepEqual(missingComponents(good, contract), [])
+    assert.ok(missingComponents(bad, contract).length > 0)
+    assert.ok(contract.required.some((item) => item.id === "NOT"))
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

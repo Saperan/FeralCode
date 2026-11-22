@@ -13,6 +13,10 @@ The repo also ships four local OpenCode plugins:
 | `feral-tools` | `/bestof` (N framed candidates, optional execution scoring with early stop), `/parts` (topological DAG into staged files under `.opencode/out/parts/`), `/spec` (neutral spec via `spec-feral`), `/feral-shot` (many-shot primer from a JSONL corpus). |
 | `feral-model-memory` | Remembers the last model selected per agent. |
 
+## Layout
+
+`packages/contract` is the general contract engine: detector, CLI, tests. `packages/feral` holds the feral-specific agents, prompts, and plugins. The root `agents/` directory stays as the OpenCode discovery surface for `spec-feral`.
+
 ## Install
 
 Requires OpenCode V2.
@@ -23,7 +27,7 @@ cd FeralCode
 ./install.sh
 ```
 
-`install.sh` copies `plugins/`, `prompts/`, `agents/`, `contracts/`, and `packages/` into `${OPENCODE_CONFIG:-$HOME/.config/opencode}`. It does not touch your existing `opencode.jsonc`; merge the relevant blocks from `opencode.example.jsonc` yourself, then run:
+`install.sh` copies `contracts/`, `agents/`, and `packages/` (`packages/feral` and `packages/contract`) into `${OPENCODE_CONFIG:-$HOME/.config/opencode}`. It does not touch your existing `opencode.jsonc`; merge the relevant blocks from `opencode.example.jsonc` yourself, then run:
 
 ```bash
 opencode reload
@@ -34,11 +38,11 @@ Point the plugin options at the example contract, or at your own:
 ```jsonc
 "plugins": [
   {
-    "package": "./plugins/feral-retry",
+    "package": "./packages/feral/plugins/feral-retry",
     "options": { "contract": "~/.config/opencode/contracts/artifact.json" }
   },
   {
-    "package": "./plugins/feral-tools",
+    "package": "./packages/feral/plugins/feral-tools",
     "options": { "contract": "~/.config/opencode/contracts/artifact.json" }
   }
 ]
@@ -98,6 +102,7 @@ node packages/contract/bin/feral-contract.mjs check --contract contracts/artifac
 node packages/contract/bin/feral-contract.mjs check --contract contracts/artifact.json answer.md --json
 node packages/contract/bin/feral-contract.mjs validate --contract contracts/artifact.json
 node packages/contract/bin/feral-contract.mjs stats /tmp/opencode/feral-retry/attempts.log
+node packages/contract/bin/feral-contract.mjs induce --good fixtures/good --bad fixtures/bad --name induced --out contracts/induced.json
 ```
 
 Exit codes: `0` pass, `1` missing components, `2` usage or invalid contract. Drop it into CI to make a failed contract a red build.

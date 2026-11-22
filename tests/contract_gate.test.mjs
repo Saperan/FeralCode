@@ -1,6 +1,6 @@
 import test from "node:test"
 import assert from "node:assert/strict"
-import { gateText } from "../plugins/feral-tools/contract_gate.ts"
+import { gateText } from "../packages/feral/plugins/feral-tools/contract_gate.ts"
 
 const contract = {
   name: "part",
