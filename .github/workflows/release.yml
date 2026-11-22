@@ -10,7 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -32,6 +31,8 @@ jobs:
             exit 1
           fi
 
-      - name: Publish @feralcode/contract with provenance
+      - name: Publish @feralcode/contract
         working-directory: packages/contract
-        run: npm publish --access public --provenance
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
