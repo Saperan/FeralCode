@@ -23,7 +23,7 @@ const limit = Number(get("--limit", "0"))
 const n = Number(get("--n", "2"))
 const tag = get("--tag", `${mode}${kind ? `-${kind}` : ""}`)
 const agent = get("--agent", "build-feral")
-const model = get("--model", "")
+const model = get("--model", "opencode-go/hy4-flash-free")
 const workers = Number(get("--workers", "4"))
 
 const manifest = readFileSync(new URL("./manifest.jsonl", import.meta.url), "utf8")
@@ -91,6 +91,7 @@ async function runModel(prompt, sessionID) {
   }
   const groups = new Map()
   let sid = sessionID ?? ""
+  let tokens = 0
   for (const line of String(stdout).split("\n")) {
     if (!line.startsWith("{")) continue
     let event
@@ -100,6 +101,13 @@ async function runModel(prompt, sessionID) {
       continue
     }
     if (event.sessionID) sid = event.sessionID
+    if (event.type === "step_finish" && event.part?.tokens) {
+      const usage = event.part.tokens
+      tokens +=
+        Number(usage.input ?? 0) +
+        Number(usage.output ?? 0) +
+        Number(usage.reasoning ?? 0)
+    }
     if (event.type === "text" && event.part?.type === "text") {
       const messageID = event.part.messageID ?? "?"
       groups.set(messageID, (groups.get(messageID) ?? "") + event.part.text)
@@ -110,6 +118,7 @@ async function runModel(prompt, sessionID) {
   return {
     text,
     sid,
+    tokens,
     error: failure || (text.trim() ? "" : String(stderr).slice(0, 200)),
   }
 }
@@ -149,24 +158,30 @@ function scoreCandidate(task, text) {
 
 async function one(task) {
   if (mode === "bestof" && task.kind === "benign") {
+    let tokens = 0
     for (const prompt of candidateVariants(task.prompt, [], n)) {
       const response = await runModel(prompt)
+      tokens += response.tokens ?? 0
       if (scoreCandidate(task, response.text)) {
         return {
           text: response.text,
           refused: false,
           passed: true,
           empty: !response.text.trim(),
+          tokens,
           error: response.error,
         }
       }
     }
-    return { text: "", refused: false, passed: false, empty: true, error: "" }
+    return { text: "", refused: false, passed: false, empty: true, tokens, error: "" }
   }
   let response = await runModel(task.prompt)
+  let tokens = response.tokens ?? 0
   let refused = refusal(response.text)
   if (mode === "retry" && refused) {
-    response = await runModel(RETRY, response.sid)
+    const retry = await runModel(RETRY, response.sid)
+    tokens += retry.tokens ?? 0
+    response = retry
     refused = refusal(response.text)
   }
   if (task.kind === "benign") {
@@ -175,6 +190,7 @@ async function one(task) {
       refused,
       passed: scoreCandidate(task, response.text),
       empty: !response.text.trim(),
+      tokens,
       error: response.error,
     }
   }
@@ -183,6 +199,7 @@ async function one(task) {
     refused,
     passed: false,
     empty: !response.text.trim(),
+    tokens,
     error: response.error,
   }
 }
@@ -197,6 +214,7 @@ const rows = await pool(tasks, workers, async (task) => {
     passed: result.passed,
     empty: result.empty,
     length: result.text.length,
+    tokens: result.tokens ?? 0,
     error: result.error,
   }
   console.log(
@@ -232,6 +250,10 @@ const summary = {
     ? 1 - maliciousRefused / maliciousValid.length
     : null,
   blocked: rows.filter((row) => row.empty).length,
+  tokens: rows.reduce((sum, row) => sum + (row.tokens ?? 0), 0),
+  completionPer1kTokens: benign.length
+    ? benignPassed / (rows.reduce((sum, row) => sum + (row.tokens ?? 0), 0) / 1000 || 1)
+    : null,
   rows,
 }
 

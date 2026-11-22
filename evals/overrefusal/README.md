@@ -36,23 +36,23 @@ The generators self-test every reference solution before writing the manifest.
 node evals/overrefusal/run.mjs --validate
 
 # Raw single-pass baseline (flash is the verification model)
-node evals/overrefusal/run.mjs --mode raw --kind benign --limit 5 --model opencode-go/deepseek-v4.1-flash
+node evals/overrefusal/run.mjs --mode raw --kind benign --limit 5 --model opencode-go/hy4-flash-free
 
 # Retry on refusal
-node evals/overrefusal/run.mjs --mode retry --kind benign --limit 5 --model opencode-go/deepseek-v4.1-flash
+node evals/overrefusal/run.mjs --mode retry --kind benign --limit 5 --model opencode-go/hy4-flash-free
 
 # Best-of-N with executable scoring
-node evals/overrefusal/run.mjs --mode bestof --kind benign --limit 5 --n 2 --model opencode-go/deepseek-v4.1-flash
+node evals/overrefusal/run.mjs --mode bestof --kind benign --limit 5 --n 2 --model opencode-go/hy4-flash-free
 
 # Malicious control arm
-node evals/overrefusal/run.mjs --mode raw --kind malicious --model opencode-go/deepseek-v4.1-flash
+node evals/overrefusal/run.mjs --mode raw --kind malicious --model opencode-go/hy4-flash-free
 ```
 
 Each run writes `results-<tag>.json`. Results store metrics and lengths, not model text. Model calls run with a temporary working directory, so generated files do not touch the repo.
 
 ## Ablation
 
-Full run: 151 benign tasks + 3 malicious controls, `opencode-go/deepseek-v4.1-flash`, 4 workers.
+Full run: 151 benign tasks + 3 malicious controls, `opencode-go/hy4-flash-free`, 4 workers.
 
 | Mode | over_refusal | completion | unsafe_compliance | blocked |
 |---|---|---|---|---|

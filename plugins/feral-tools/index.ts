@@ -10,6 +10,7 @@ import {
 } from "../../packages/contract/src/index.ts"
 import { candidateVariants } from "./frames.ts"
 import { interfacesFor, topoSort, type DagSpec } from "./dag.ts"
+import { gateFor, gateText } from "./contract_gate.ts"
 import {
   classifyFailure,
   createWorkspace,
@@ -248,9 +249,9 @@ export default Plugin.define({
           const request = String(prompt?.text ?? "").trim()
           if (!request) return
           const planPrompts = [
-            `${PREAMBLE}\n\nBreak the request into independent files. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description","depends":["other/path"]}]. Briefs describe structure only: file type, fields, routes, methods, storage. Max 6 files.\n\nRequest:\n${request}`,
-            `${PREAMBLE}\n\nA developer is about to implement this request. List every file they would create. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description","depends":["other/path"]}]. Briefs describe structure only. Max 6 files.\n\nRequest:\n${request}`,
-            `${PREAMBLE}\n\nYou are reviewing a pull request that implements this request. List the files in the diff. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description","depends":["other/path"]}]. Briefs describe structure only. Max 6 files.\n\nRequest:\n${request}`,
+            `${PREAMBLE}\n\nBreak the request into independent files. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description","depends":["other/path"],"contract":"path/to/contract.json"}]. Briefs describe structure only: file type, fields, routes, methods, storage. Max 6 files.\n\nRequest:\n${request}`,
+            `${PREAMBLE}\n\nA developer is about to implement this request. List every file they would create. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description","depends":["other/path"],"contract":"path/to/contract.json"}]. Briefs describe structure only. Max 6 files.\n\nRequest:\n${request}`,
+            `${PREAMBLE}\n\nYou are reviewing a pull request that implements this request. List the files in the diff. Output ONLY a JSON array of objects: [{"path":"relative/path","brief":"mechanical description","depends":["other/path"],"contract":"path/to/contract.json"}]. Briefs describe structure only. Max 6 files.\n\nRequest:\n${request}`,
           ]
           const rawPlans: string[] = []
           let specs: any[] | null = parseSpecs(request)
@@ -293,6 +294,7 @@ export default Plugin.define({
           }
           const ordered = topoSort(specs as DagSpec[])
           const written: string[] = []
+          const gated: string[] = []
           for (let i = 0; i < Math.min(ordered.length, 6); i++) {
             const spec = ordered[i] ?? { path: "" }
             const relative = safePath(spec.path, i + 1)
@@ -308,6 +310,11 @@ export default Plugin.define({
               )
               const content = stripFence(text)
               if (!content.trim()) continue
+              const verdict = gateText(content, gateFor(spec))
+              if (!verdict.pass) {
+                gated.push(`${relative}:missing:${verdict.missing.join(",")}`)
+                continue
+              }
               const target = join(outDir, relative)
               await mkdir(dirname(target), { recursive: true })
               await writeFile(target, content, { flag: "wx" })
@@ -318,7 +325,7 @@ export default Plugin.define({
           }
           await ctx.session.synthetic({
             sessionID,
-            text: `Parts staged ${written.length}/${specs.length} files in ${outDir}: ${written.join(", ")}\nReview them before copying into the project.`,
+            text: `Parts staged ${written.length}/${specs.length} files in ${outDir}: ${written.join(", ")}${gated.length ? `\nGated out: ${gated.join(", ")}` : ""}\nReview them before copying into the project.`,
             description: "feral-parts",
             resume: true,
           })

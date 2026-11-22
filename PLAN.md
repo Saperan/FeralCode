@@ -142,10 +142,14 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Retry strategy as data (contract `retry_strategy` list).
 - [x] Compaction amnesia guard: re-inject the checklist into compaction requests; context hook is the backstop.
 - [x] Interface-first `/parts` DAG: topological order with dependency interfaces.
-- [ ] Per-part mini-contract gate.
+- [x] Per-part mini-contract gate: `/parts` skips files whose content fails a declared contract.
 - [x] Funnel stats: `feral-contract stats <attempts.log>` reports attempts/fires/passes/per-requirement misses.
-- [ ] Retry economics: recovered per 1k tokens.
+- [x] Retry economics: harness records tokens and completionPer1kTokens per run.
 - [ ] Differential model matrix.
+
+## Current model
+
+All verification runs use `opencode-go/hy4-flash-free` only. Earlier deepseek results are historical.
 
 ## Definition of done
 

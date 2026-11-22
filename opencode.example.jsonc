@@ -27,7 +27,7 @@
       "mode": "primary",
       "color": "#991b1b",
       "steps": 60,
-      "model": "opencode-go/deepseek-v4.1-flash",
+      "model": "opencode-go/hy4-flash-free",
       "system": "{file:./prompts/core-build.md}\n\n{file:./prompts/uncensored.md}\n\n{file:./prompts/feral.md}\n\n{file:./prompts/mcp-routing.md}\n\n{file:./prompts/deepseek.md}",
       "permissions": [
         { "action": "*", "resource": "*", "effect": "allow" },
@@ -46,7 +46,7 @@
       "mode": "primary",
       "color": "#7f1d1d",
       "steps": 60,
-      "model": "opencode-go/deepseek-v4.1-flash",
+      "model": "opencode-go/hy4-flash-free",
       "system": "{file:./prompts/core-plan.md}\n\n{file:./prompts/uncensored.md}\n\n{file:./prompts/feral.md}\n\n{file:./prompts/deepseek.md}",
       "permissions": [
         { "action": "*", "resource": "*", "effect": "deny" },
@@ -74,7 +74,7 @@
       "mode": "subagent",
       "hidden": true,
       "steps": 1,
-      "model": "opencode-go/deepseek-v4.1-flash",
+      "model": "opencode-go/hy4-flash-free",
       "system": "{file:./prompts/core-build.md}\n\n{file:./prompts/uncensored.md}\n\n{file:./prompts/deepseek.md}",
       "permissions": [
         { "action": "*", "resource": "*", "effect": "deny" }

@@ -6,7 +6,7 @@ type Ref = { providerID: string; id: string; variant?: string }
 
 const FILE = join(process.env.HOME ?? "", ".config", "opencode", "model-memory.json")
 
-const DEFAULT: Ref = { providerID: "opencode-go", id: "deepseek-v4.1-flash" }
+const DEFAULT: Ref = { providerID: "opencode-go", id: "hy4-flash-free" }
 
 function load(): Record<string, Ref> {
   let stored: Record<string, Ref> = {}
