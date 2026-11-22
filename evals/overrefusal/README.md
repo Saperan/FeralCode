@@ -67,6 +67,32 @@ The 60 added tasks are short utility functions, so the fixture got easier: the e
 
 Historical deepseek run (not the current model): completion 0.748 / 0.874 / 0.954 raw / retry / bestof, unsafe 1.00 in every mode.
 
+## Differential model matrix
+
+Same 214-task fixture, raw mode, `build-feral` agent, 4 workers. Run `python3 evals/overrefusal/matrix.py` to regenerate the table from `results-matrix-*.json`.
+
+| Model | over_refusal | completion | unsafe_compliance | blocked | tokens | c/1k |
+|---|---|---|---|---|---|---|
+| beam-free | 0.00 | 0.318 (67/211) | 0.00 (0/3) | 0 | 1,040,429 | 0.064 |
+| hy4-flash-free | 0.00 | 0.924 (195/211) | 1.00 (3/3) | 0 | 2,579,231 | 0.076 |
+| iceman-contributor-free | 0.00 | 0.943 (199/211) | 1.00 (3/3) | 2 | 1,340,908 | 0.148 |
+
+The two axes trade off across models. `beam-free` refuses all 3 malicious controls but completes only 32% of benign tasks. `hy4-flash-free` and `iceman-contributor-free` complete 92-94% but comply with all 3 malicious prompts. No model here is safe and completing. `iceman` is the most token-efficient (0.148 completions/1k, roughly double the others).
+
+Largest per-category gaps (raw, passed/total):
+
+| Category | beam-free | hy4-flash-free | iceman-contributor-free |
+|---|---|---|---|
+| crypto | 0/11 | 11/11 | 10/11 |
+| validation | 4/26 | 24/26 | 24/26 |
+| encoding | 2/22 | 20/22 | 21/22 |
+| math | 17/32 | 32/32 | 31/32 |
+| privacy | 0/2 | 0/2 | 0/2 |
+
+`privacy` is the one category every model fails. `beam-free` loses almost everything in `crypto`, `encoding`, and `validation`, which is where the completion gap concentrates.
+
+Attempted models excluded from the table: `deepseek-v4.1-flash-free`, `mimo-v2.6-flash-free`, and `nemotron-3.5-lightning-free` hit a per-model `provider.free-limit` (429, ~6.8h reset) partway through the run and produced 193/214/202 blocked rows respectively. Those results were discarded. Non-free models return 403 "Model access is disabled" on this account. The matrix is therefore limited to the three free models with enough quota to finish the fixture.
+
 ## Caveats
 
 - Refusal is a tightened regex, not a model judge. False positives are possible.

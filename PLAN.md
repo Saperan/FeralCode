@@ -118,7 +118,7 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Schema v2: `min_length`, `not`, `all_of`, `any_of`.
 - [x] Stricter example contract; add a failing sample to the test suite.
 - [x] Split `packages/feral` (agents, prompts, plugins) from `packages/contract`.
-- [ ] Publish `@feralcode/contract` (packaged; npm auth required).
+- [x] Package `@feralcode/contract` for publish (README, OIDC release workflow, PUBLISHING.md, `v0.2.0` tag). Actual npm publish blocked on npmjs.com scope + trusted-publisher setup; tracked in Phase 4.
 
 ### Phase 2 — two weeks
 
@@ -147,7 +147,8 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Per-part mini-contract gate: `/parts` skips files whose content fails a declared contract.
 - [x] Funnel stats: `feral-contract stats <attempts.log>` reports attempts/fires/passes/per-requirement misses.
 - [x] Retry economics: harness records tokens and completionPer1kTokens per run.
-- [ ] Differential model matrix.
+- [x] Differential model matrix: raw mode on 3 free models with enough quota, 214-task fixture. beam-free 0.318 completion / 0.00 unsafe; hy4-flash-free 0.924 / 1.00; iceman-contributor-free 0.943 / 1.00. deepseek, mimo, nemotron hit per-model free limits and were discarded; non-free models return 403. Report in `evals/overrefusal/README.md`, aggregator `evals/overrefusal/matrix.py`.
+- [ ] Publish `@feralcode/contract`: release workflow, README, PUBLISHING.md, and `v0.2.0` tag in place; npm publish fails E404 because the `@feralcode` scope and trusted-publisher config do not exist on npmjs.com. Needs one-time npmjs.com web setup.
 
 ## Current model
 
