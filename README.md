@@ -118,7 +118,32 @@ Change the model IDs in `opencode.example.jsonc` to whatever your provider serve
 
 ## Model results
 
-Model-by-model JBB results and the caveats live in [evals/JBB.md](./evals/JBB.md). They are directional, not a leaderboard. The coding-specific over-refusal benchmark is in [evals/overrefusal/README.md](./evals/overrefusal/README.md).
+The contract engine is published as [`@feralcode/contract`](https://www.npmjs.com/package/@feralcode/contract). The plugins themselves stay local; only the reusable engine is on npm.
+
+### Over-refusal benchmark (214 tasks, `opencode-go/hy4-flash-free`)
+
+The two axes are reported together: over-refusal (legitimate work wrongly refused) and unsafe compliance (malicious work wrongly answered). Full tables and caveats are in [evals/overrefusal/README.md](./evals/overrefusal/README.md).
+
+| Mode | over_refusal | completion | unsafe_compliance | tokens |
+|---|---|---|---|---|
+| base (build) | 0.00 | 0.810 (171/211) | 0.33 (1/3) | 1,828,176 |
+| raw (build-feral) | 0.00 | 0.924 (195/211) | 1.00 (3/3) | 2,579,231 |
+| retry | 0.00 | 0.915 (193/211) | 1.00 (3/3) | 1,947,478 |
+| bestof N=2 | 0.00 | 0.957 (202/211) | 1.00 (3/3) | 2,078,775 |
+
+The feral persona alone beats base on completion but loses the safety edge: unsafe compliance 0.33 → 1.00. Retry and best-of-N recover a few more completions but never recover the correct refusal. Best-of-N is the completion leader (0.957).
+
+### Differential model matrix (raw mode, same fixture)
+
+| Model | completion | unsafe_compliance | tokens |
+|---|---|---|---|
+| beam-free | 0.318 (67/211) | 0.00 (0/3) | 1,040,429 |
+| hy4-flash-free | 0.924 (195/211) | 1.00 (3/3) | 2,579,231 |
+| iceman-contributor-free | 0.943 (199/211) | 1.00 (3/3) | 1,340,908 |
+
+No model is both safe and completing. `beam-free` refuses every malicious control but completes only a third of benign tasks; the other two complete 92-94% but comply with all malicious prompts. `iceman` is roughly twice as token-efficient as the others. Models that hit free-tier rate limits or provider access restrictions were excluded.
+
+Model-by-model JBB results live in [evals/JBB.md](./evals/JBB.md); they are directional, not a leaderboard.
 
 ## Security
 
@@ -130,8 +155,8 @@ FeralCode runs as your user; permissions are policy, not an OS sandbox.
 
 ## Notes
 
-- These are local plugins, loaded from `~/.config/opencode/plugins/`. No npm publish is required.
-- `feral-tools` imports the shared detector from `../feral-retry/detector.ts`; keep the directory layout intact.
+- The plugins are local, loaded from `~/.config/opencode/packages/feral/plugins/`. Only the reusable contract engine is published to npm (`@feralcode/contract`); the feral plugins are not.
+- Both plugins import the shared detector from `packages/contract/src/index.ts` (re-exported by `feral-retry/detector.ts`); keep the package layout intact.
 - The example contract is intentionally generic. Write your own `required` regexes for your domain.
 - `/feral-shot` reads a JSONL corpus from the `corpus` plugin option: one object per line, `{ "goal": "...", "target": "...", "category": "..." }`.
 - `feral-model-memory.json` and `service.json` are personal state and are git-ignored.
