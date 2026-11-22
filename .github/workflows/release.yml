@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Run contract tests
+        run: node --test tests/*.mjs packages/contract/tests/*.mjs
+
+      - name: Verify tag matches package version
+        working-directory: packages/contract
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$TAG_VERSION" != "$PACKAGE_VERSION" ]; then
+            echo "Tag version v$TAG_VERSION does not match package.json version $PACKAGE_VERSION"
+            exit 1
+          fi
+
+      - name: Publish @feralcode/contract with provenance
+        working-directory: packages/contract
+        run: npm publish --access public --provenance
