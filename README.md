@@ -12,6 +12,7 @@ The repo also ships four local OpenCode plugins:
 | `feral-sampling` | Per-agent temperature/top-p, `/feral-hot` toggle, compaction and title sampling. |
 | `feral-tools` | `/bestof` (N framed candidates, optional execution scoring with early stop), `/parts` (topological DAG into staged files under `.opencode/out/parts/`), `/spec` (neutral spec via `spec-feral`), `/feral-shot` (many-shot primer from a JSONL corpus). |
 | `feral-model-memory` | Remembers the last model selected per agent. |
+| `feral-update` | Checks the source repo on session start; when behind and clean, pulls and re-runs `install.sh`. `/feral-update` checks manually, `/feral-update now` forces a pull+reinstall. |
 
 ## Layout
 
@@ -49,6 +50,33 @@ Point the plugin options at the example contract, or at your own:
 ```
 
 If the contract file is missing, retry still runs on verbal refusals only.
+
+## Auto-update
+
+`feral-update` keeps the installed plugins in sync with the source repo. Add it to the config `plugins` array:
+
+```jsonc
+{
+  "package": "./packages/feral/plugins/feral-update",
+  "options": {
+    "repo": "~/FeralCode",   // your clone of this repo
+    "branch": "main",
+    "auto": true,            // pull+reinstall on session start when behind
+    "intervalMinutes": 360   // throttle between checks (default 6h)
+  }
+}
+```
+
+On each new session it fetches `origin/<branch>` and compares with `HEAD`. If the working tree is clean and local is behind, it runs `git pull --ff-only` then `install.sh`, and posts a notice asking you to run `opencode reload`. It will not pull over local changes or when local is ahead.
+
+Manual commands:
+
+```text
+/feral-update        # check status (throttled off for this call)
+/feral-update now    # force pull + reinstall
+```
+
+Set `"auto": false` to disable background updates and use only the manual command. The check needs a git remote reachable without credentials (a public clone works); private repos need the remote authenticated for the user running OpenCode.
 
 ## The contract
 
