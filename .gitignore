@@ -18,4 +18,5 @@ evals/overrefusal/results-*.json
 /harvester/
 /ransom/
 /*.py
+!merge-config.py
 __pycache__/

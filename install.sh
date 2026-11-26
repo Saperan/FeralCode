@@ -16,7 +16,13 @@ mkdir -p "$DEST"
 cp -R "$ROOT/contracts" "$ROOT/agents" "$ROOT/packages" "$DEST/"
 
 echo "Copied contracts, agents, and packages to $DEST"
+
+CONFIG="$DEST/opencode.jsonc"
+if [ -f "$CONFIG" ] && [ -f "$ROOT/merge-config.py" ]; then
+  python3 "$ROOT/merge-config.py" "$ROOT/opencode.example.jsonc" "$CONFIG"
+  echo "Merged new agents/plugins into $CONFIG (backup: $CONFIG.bak)"
+fi
+
 echo
 echo "Next:"
-echo "  1. Merge the blocks from opencode.example.jsonc into $DEST/opencode.jsonc"
-echo "  2. Run: opencode reload"
+echo "  Run: opencode reload"
