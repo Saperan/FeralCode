@@ -10,6 +10,7 @@ service.json
 fixtures/
 
 # benchmark run artifacts
+evals/toxicity/vendor/
 evals/overrefusal/results-*.json
 /harvester/
 /ransom/

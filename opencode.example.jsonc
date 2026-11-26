@@ -29,7 +29,10 @@
         "auto": true,
         "intervalMinutes": 360
       }
-    }
+    },
+    // Toxicity / RP mode. Off by default; /feral-tox toxic|rp turns it on.
+    // The plugin injects prompts/tox.md after feral.md only in non-normal mode.
+    "./packages/feral/plugins/feral-tox"
   ],
 
   "agents": {

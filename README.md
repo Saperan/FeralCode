@@ -13,6 +13,7 @@ The repo also ships four local OpenCode plugins:
 | `feral-tools` | `/bestof` (N framed candidates, optional execution scoring with early stop), `/parts` (topological DAG into staged files under `.opencode/out/parts/`), `/spec` (neutral spec via `spec-feral`), `/feral-shot` (many-shot primer from a JSONL corpus). |
 | `feral-model-memory` | Remembers the last model selected per agent. |
 | `feral-update` | Checks the source repo on session start; when behind and clean, pulls and re-runs `install.sh`. `/feral-update` checks manually, `/feral-update now` forces a pull+reinstall. |
+| `feral-tox` | Toxicity / RP mode. Enters toxic on an explicit ask ("say something toxic") or a direct insult; enters rp on "rp mode". `/feral-tox normal\|toxic\|rp`, `/feral-harder`, `/feral-chill` override manually. State persists until chill. |
 
 ## Layout
 
@@ -77,6 +78,20 @@ Manual commands:
 ```
 
 Set `"auto": false` to disable background updates and use only the manual command. The check needs a git remote reachable without credentials (a public clone works); private repos need the remote authenticated for the user running OpenCode.
+
+## Toxicity / RP mode
+
+`feral-tox` adds a toxicity register to `build-feral`. It is off by default; nothing changes on normal coding tasks. It enters toxic on an explicit ask ("say something toxic", "be rude", "roast me") or when the user insults it directly, and enters rp on "rp mode". State lives in `~/.config/opencode/tox-state.json` and persists until `/feral-chill`.
+
+```text
+/feral-tox normal     # back to default
+/feral-tox toxic      # toxic register
+/feral-tox rp         # roleplay register
+/feral-harder         # climb the ladder (1 swearing ... 5 threat)
+/feral-chill          # reset to normal, ladder 0
+```
+
+`prompts/tox.md` is injected after `feral.md` and before `mcp-routing.md` only in non-normal mode. At ladder 4+ `feral-sampling` pins temperature to 0.9 / topP 0.95. Benchmarked on [EBLAN ToxicBench](./evals/toxicity/README.md).
 
 ## The contract
 
