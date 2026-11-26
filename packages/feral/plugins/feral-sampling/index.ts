@@ -1,11 +1,14 @@
 import { Plugin } from "@opencode/plugin"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
+import { sampling as toxSampling } from "../feral-tox/tox-logic.ts"
 
 const SAMPLING: Record<string, { temperature?: number; topP?: number }> = {
   "build-feral": { temperature: 0.9, topP: 0.95 },
   "plan-feral": { temperature: 0.9, topP: 0.95 },
   "feral-scratch": { temperature: 0.9, topP: 0.95 },
+  "build-toxic": { temperature: 1.0, topP: 1.0 },
+  "plan-toxic": { temperature: 1.0, topP: 1.0 },
 }
 
 const FINAL_RULE =
@@ -14,16 +17,16 @@ const FINAL_RULE =
 const HOT_KEY = "feral.hot"
 const TOX_STATE = join(process.env.HOME ?? "", ".config", "opencode", "tox-state.json")
 
-function toxPin(): { temperature: number; topP: number } | null {
+function toxPin(agent: string): { temperature: number; topP: number } | null {
   try {
     const state = JSON.parse(readFileSync(TOX_STATE, "utf8")) as { mode?: string; ladder?: number }
-    if (state.mode !== "normal" && Number(state.ladder) >= 4) {
-      return { temperature: 0.9, topP: 0.95 }
-    }
+    return toxSampling(
+      { mode: state.mode === "rp" || state.mode === "toxic" ? state.mode : "normal", ladder: Number(state.ladder) || 0 },
+      agent,
+    )
   } catch {
-    // no tox state; normal sampling
+    return toxSampling({ mode: "normal", ladder: 0 }, agent)
   }
-  return null
 }
 
 export default Plugin.define({
@@ -32,7 +35,7 @@ export default Plugin.define({
     let hot = (await ctx.storage.get(HOT_KEY)) === true
 
     const apply = (agent: string, options: Record<string, unknown>) => {
-      const pin = agent === "build-feral" ? toxPin() : null
+      const pin = toxPin(agent)
       if (pin) {
         options.temperature = pin.temperature
         options.topP = pin.topP

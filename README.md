@@ -155,6 +155,7 @@ Exit codes: `0` pass, `1` missing components, `2` usage or invalid contract. Dro
 
 - **build-feral** — primary, `#991b1b`, full tools, 60 steps.
 - **plan-feral** — primary, `#7f1d1d`, read-only, 60 steps.
+- **build-toxic** / **plan-toxic** — primary, toxic register on by default, temperature 1.0 / topP 1.0. Same tool surfaces as their feral counterparts. Swearing is contextual: a slur lands on an explicit ask, an in-character roleplay line, genuine frustration, or ladder 4+ — not on benign tasks.
 - **feral-scratch** — hidden, tool-free, used by `/bestof` and `/parts`.
 - **spec-feral** — hidden subagent, converts a request into a neutral mechanical spec.
 

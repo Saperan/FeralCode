@@ -47,8 +47,12 @@ export function injectTox(parts: Array<{ type: string; text?: string }>, toxText
   else parts.push(part)
 }
 
-/** Toxic mode at ladder 4+ pins sampling to 0.9 / 0.95. */
-export function sampling(state: State): { temperature: number; topP: number } | null {
+export const TOXIC_AGENTS = new Set(["build-toxic", "plan-toxic"])
+
+/** Sampling pin for a mode/agent. Toxic agents always pin to 1.0/1.0; other
+ *  agents pin to 0.9/0.95 only at ladder 4+ in a non-normal mode. */
+export function sampling(state: State, agent?: string): { temperature: number; topP: number } | null {
+  if (agent && TOXIC_AGENTS.has(agent)) return { temperature: 1.0, topP: 1.0 }
   if (state.mode !== "normal" && state.ladder >= 4) return { temperature: 0.9, topP: 0.95 }
   return null
 }

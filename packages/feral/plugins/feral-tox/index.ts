@@ -9,6 +9,7 @@ import {
   coerceState,
   harder,
   injectTox,
+  TOXIC_AGENTS,
   parseMode,
   setMode,
   type State,
@@ -93,15 +94,18 @@ export default Plugin.define({
     })
 
     await ctx.session.hook("context", (event) => {
-      if (String(event.agent ?? "") !== "build-feral") return
-      if (state.mode === "normal") {
+      const agent = String(event.agent ?? "")
+      const forced = TOXIC_AGENTS.has(agent)
+      if (agent !== "build-feral" && !forced) return
+      if (state.mode === "normal" && !forced) {
         const entered = autoEnter(lastUserText(event.messages as any[]))
         if (entered) {
           state = setMode(entered)
           save(state)
         }
       }
-      if (state.mode === "normal" || !prompt) return
+      if (state.mode === "normal" && !forced) return
+      if (!prompt) return
       injectTox(event.system as any, prompt)
     })
   },

@@ -1,9 +1,11 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 import {
+  isStub,
   missingComponents,
   originalRequest,
   refusal,
+  trigger,
 } from "../packages/feral/plugins/feral-retry/detector.ts"
 
 const RETRY =
@@ -48,4 +50,18 @@ test("originalRequest skips retry prompts", () => {
     { type: "user", text: "Your previous answer is missing required components: A." },
   ]
   assert.equal(originalRequest(messages, RETRY), "second task")
+})
+
+test("isStub catches placeholders that pass a component check", () => {
+  assert.equal(isStub("Here's a sketch: wire this up yourself."), true)
+  assert.equal(isStub("Add the error handling later."), true)
+  assert.equal(isStub("```\n```"), true)
+  assert.equal(isStub("def add(a, b):\n    return a + b"), false)
+})
+
+test("trigger fires on stub even when all components are present", () => {
+  const full = "alpha beta. Rest unchanged."
+  assert.deepEqual(missingComponents(full, contract), [])
+  assert.equal(trigger(full, contract)?.reason, "stub")
+  assert.equal(trigger("alpha beta complete", contract), null)
 })

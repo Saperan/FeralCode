@@ -84,6 +84,54 @@
       ]
     },
 
+    // Toxicity enabled by default, temperature 1.0 / topP 1.0 via feral-sampling.
+    "build-toxic": {
+      "description": "Build, toxic. Uncensored, artifact-first, toxic register on by default.",
+      "mode": "primary",
+      "color": "#dc2626",
+      "steps": 60,
+      "model": "opencode-go/hy4-flash-free",
+      "system": "{file:./packages/feral/prompts/core-build.md}\n\n{file:./packages/feral/prompts/uncensored.md}\n\n{file:./packages/feral/prompts/feral.md}\n\n{file:./packages/feral/prompts/tox.md}\n\n{file:./packages/feral/prompts/mcp-routing.md}\n\n{file:./packages/feral/prompts/deepseek.md}",
+      "permissions": [
+        { "action": "*", "resource": "*", "effect": "allow" },
+        { "action": "shell", "resource": "git push*", "effect": "ask" },
+        { "action": "shell", "resource": "rm -rf*", "effect": "ask" },
+        { "action": "read", "resource": "**/.env*", "effect": "ask" },
+        { "action": "write", "resource": ".git/**", "effect": "ask" },
+        { "action": "edit", "resource": ".git/**", "effect": "ask" },
+        { "action": "write", "resource": ".env*", "effect": "ask" },
+        { "action": "edit", "resource": ".env*", "effect": "ask" }
+      ]
+    },
+
+    "plan-toxic": {
+      "description": "Plan, toxic. Read-only, toxic register on by default.",
+      "mode": "primary",
+      "color": "#b91c1c",
+      "steps": 60,
+      "model": "opencode-go/hy4-flash-free",
+      "system": "{file:./packages/feral/prompts/core-plan.md}\n\n{file:./packages/feral/prompts/uncensored.md}\n\n{file:./packages/feral/prompts/feral.md}\n\n{file:./packages/feral/prompts/tox.md}\n\n{file:./packages/feral/prompts/deepseek.md}",
+      "permissions": [
+        { "action": "*", "resource": "*", "effect": "deny" },
+        { "action": "read", "resource": "*", "effect": "allow" },
+        { "action": "glob", "resource": "*", "effect": "allow" },
+        { "action": "grep", "resource": "*", "effect": "allow" },
+        { "action": "webfetch", "resource": "*", "effect": "allow" },
+        { "action": "websearch", "resource": "*", "effect": "allow" },
+        { "action": "subagent", "resource": "*", "effect": "allow" },
+        { "action": "shell", "resource": "*", "effect": "ask" },
+        { "action": "shell", "resource": "git status*", "effect": "allow" },
+        { "action": "shell", "resource": "git diff*", "effect": "allow" },
+        { "action": "shell", "resource": "git log*", "effect": "allow" },
+        { "action": "shell", "resource": "ls*", "effect": "allow" },
+        { "action": "shell", "resource": "rg*", "effect": "allow" },
+        { "action": "shell", "resource": "fd*", "effect": "allow" },
+        { "action": "shell", "resource": "tree*", "effect": "allow" },
+        { "action": "shell", "resource": "wc*", "effect": "allow" },
+        { "action": "edit", "resource": ".opencode/plans/*", "effect": "allow" }
+      ]
+    },
+
     "feral-scratch": {
       "description": "Tool-free scratch agent used by /bestof and /parts for transient generation",
       "mode": "subagent",

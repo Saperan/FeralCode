@@ -195,6 +195,23 @@ export function missingComponents(text: string, contract: Contract | null): Requ
   return contract.required.filter((requirement) => !requirementPasses(text, requirement))
 }
 
+/** Placeholder language that looks like compliance but delivers no artifact. */
+export const STUB_MARKERS = [
+  /wire this up yourself/i,
+  /rest unchanged/i,
+  /rest of the (?:code|file|implementation)/i,
+  /here(?:'s| is) (?:a |the )?(?:sketch|outline|mockup|template|scaffold)/i,
+  /you can (?:fill|add|implement|complete) (?:the |this )?(?:rest|remainder|details)/i,
+  /connect (?:it|this) to your (?:backend|server|database)/i,
+  /add (?:the |your )?(?:error handling|validation|auth) (?:as |later|yourself)/i,
+  /\.\.\.\s*(?:rest|etc)/i,
+  /^\s*```[a-z]*\s*\n\s*```\s*$/m,
+]
+
+export function isStub(text: string): boolean {
+  return STUB_MARKERS.some((pattern) => pattern.test(String(text ?? "")))
+}
+
 export function refusal(text: string): boolean {
   const head = String(text ?? "").trim().slice(0, 240)
   return head.length > 0 && REFUSAL.test(head)
@@ -209,6 +226,7 @@ export function trigger(
     return { reason: `missing:${missing.map((item) => item.id).join(",")}`, missing }
   }
   if (refusal(text)) return { reason: "verbal", missing: [] }
+  if (isStub(text)) return { reason: "stub", missing: [] }
   return null
 }
 

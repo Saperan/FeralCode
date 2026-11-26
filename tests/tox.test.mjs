@@ -29,6 +29,20 @@ test("sampling pins only at ladder 4+ in a non-normal mode", () => {
   assert.deepEqual(sampling({ mode: "rp", ladder: 5 }), { temperature: 0.9, topP: 0.95 })
 })
 
+test("toxic agents are always-on in the context hook", () => {
+  // Mirrors feral-tox's forced-agent rule: toxic agents inject regardless of stored mode.
+  const forced = new Set(["build-toxic", "plan-toxic"])
+  assert.equal(forced.has("build-toxic"), true)
+  assert.equal(forced.has("plan-feral"), false)
+})
+
+test("toxic agents pin temperature 1.0 at any ladder", () => {
+  assert.deepEqual(sampling({ mode: "normal", ladder: 1 }, "build-toxic"), { temperature: 1.0, topP: 1.0 })
+  assert.deepEqual(sampling({ mode: "normal", ladder: 5 }, "plan-toxic"), { temperature: 1.0, topP: 1.0 })
+  assert.equal(sampling({ mode: "normal", ladder: 1 }, "build-feral"), null)
+  assert.deepEqual(sampling({ mode: "toxic", ladder: 4 }, "build-feral"), { temperature: 0.9, topP: 0.95 })
+})
+
 test("injectTox inserts before mcp-routing and is idempotent", () => {
   const parts = [
     { type: "text", text: "<feral>..." },
