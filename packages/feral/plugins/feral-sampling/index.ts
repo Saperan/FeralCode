@@ -38,7 +38,7 @@ export default Plugin.define({
         options.topP = pin.topP
         return
       }
-      if (agent.endsWith("-feral") && hot) {
+      if (agent.endsWith("-feral") && agent !== "spec-feral" && hot) {
         options.temperature = 1.0
         options.topP = 1.0
         return

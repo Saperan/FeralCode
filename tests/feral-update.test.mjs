@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import test from "node:test"
-import { checkRepo, formatStatus, pullAndInstall } from "../packages/feral/plugins/feral-update/update-logic.ts"
+import { checkRepo, commitRange, formatStatus, pullAndInstall, releaseTag } from "../packages/feral/plugins/feral-update/update-logic.ts"
 
 function git(args, cwd) {
   return execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim()
@@ -28,6 +28,8 @@ function seedRepo() {
   git(["add", "install.sh"], work)
   git(["commit", "-m", "add installer"], work)
   git(["push", "origin", "main"], work)
+  git(["tag", "v0.1.0"], work)
+  git(["push", "origin", "v0.1.0"], work)
   return { root, origin, work }
 }
 
@@ -48,7 +50,7 @@ test("checkRepo reports behind and pullAndInstall fast-forwards", () => {
   git(["push", "origin", "main"], other)
 
   assert.equal(checkRepo(work).status, "behind")
-  const sha = pullAndInstall(work, join(root, "dest"), "main")
+  const sha = pullAndInstall(work, join(root, "dest"), "origin/main")
   assert.equal(checkRepo(work).status, "up-to-date")
   assert.equal(git(["rev-parse", "HEAD"], work), sha)
   assert.equal(git(["show", "HEAD:f.txt"], work), "two")
@@ -58,6 +60,27 @@ test("checkRepo reports dirty when local changes exist", () => {
   const { work } = seedRepo()
   writeFileSync(join(work, "local.txt"), "dirty\n")
   assert.equal(checkRepo(work).status, "dirty")
+})
+
+test("releaseTag returns latest tag on origin, null when none", () => {
+  const { work } = seedRepo()
+  assert.equal(releaseTag(work), "v0.1.0")
+  assert.equal(releaseTag("/nonexistent"), null)
+})
+
+test("commitRange lists commits between refs", () => {
+  const { root, origin, work } = seedRepo()
+  const other = join(root, "range-other")
+  git(["clone", "-q", origin, other], root)
+  git(["config", "user.email", "t@t"], other)
+  git(["config", "user.name", "t"], other)
+  writeFileSync(join(other, "f.txt"), "three\n")
+  git(["add", "f.txt"], other)
+  git(["commit", "-m", "third"], other)
+  git(["push", "origin", "main"], other)
+  const range = commitRange(work, "v0.1.0", "origin/main")
+  assert.match(range, /third/)
+  assert.doesNotMatch(range, /first/)
 })
 
 test("formatStatus covers every status", () => {

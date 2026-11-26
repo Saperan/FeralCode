@@ -62,13 +62,14 @@ If the contract file is missing, retry still runs on verbal refusals only.
   "options": {
     "repo": "~/FeralCode",   // your clone of this repo
     "branch": "main",
-    "auto": true,            // pull+reinstall on session start when behind
+    "auto": false,           // opt-in: check on session start when behind
+    "pinToTag": true,        // apply the latest release tag, not arbitrary HEAD
     "intervalMinutes": 360   // throttle between checks (default 6h)
   }
 }
 ```
 
-On each new session it fetches `origin/<branch>` and compares with `HEAD`. If the working tree is clean and local is behind, it runs `git pull --ff-only` then `install.sh`, and posts a notice asking you to run `opencode reload`. It will not pull over local changes or when local is ahead.
+Background updates are **off by default** (`"auto": true` to enable). When enabled, on each new session it fetches `origin/<branch>` and compares with `HEAD`. If the working tree is clean and local is behind, it prints the incoming commit range and applies the latest release tag (`pinToTag`, default true) rather than arbitrary `main` HEAD, then runs `install.sh` and posts a notice asking you to run `opencode reload`. It will not pull over local changes or when local is ahead. Manual `/feral-update now` prints the same range before applying.
 
 Manual commands:
 
@@ -194,6 +195,7 @@ FeralCode runs as your user; permissions are policy, not an OS sandbox.
 
 - `build-feral` starts from allow-all. The `ask` rules cover `git push`, `rm -rf`, `.env` reads, and `.git`/`.env` writes only. A shell wrapper can still do anything the policy does not name.
 - `/parts` never writes into the project. It stages generated files under `.opencode/out/parts/<timestamp>/` with exclusive-create writes; review them before copying.
+- `/bestof` worktrees symlink the project's `node_modules` into the scratch tree so score commands can resolve dependencies. That is a two-way door: a score command run on generated code can write through the symlink into the real `node_modules`. Score commands are trusted; run untrusted code in a container if that matters.
 - Run untrusted repositories in a container, VM, or disposable worktree, and review `/parts` output before applying it.
 
 ## Notes

@@ -34,8 +34,30 @@ export function checkRepo(repo: string, branch = "main"): CheckResult {
   }
 }
 
-export function pullAndInstall(repo: string, dest: string, branch = "main"): string {
-  git(["-C", repo, "pull", "--ff-only", "--quiet", "origin", branch])
+/** Latest signed-off release tag reachable from origin, or null if none exists. */
+export function releaseTag(repo: string, branch = "main"): string | null {
+  try {
+    const tag = git(["-C", repo, "describe", "--tags", "--abbrev=0", `origin/${branch}`])
+    return tag || null
+  } catch {
+    return null
+  }
+}
+
+/** Short commit range between two refs, for the pre-apply notice. */
+export function commitRange(repo: string, from: string, to: string): string {
+  try {
+    git(["-C", repo, "fetch", "--quiet", "origin"])
+    return git(["-C", repo, "log", "--oneline", "--no-decorate", `${from}..${to}`]) || "(no commits)"
+  } catch (error) {
+    return `(range unavailable: ${String(error instanceof Error ? error.message : error)})`
+  }
+}
+
+/** Pull a specific ref (tag when pinned), then reinstall. Returns the applied SHA. */
+export function pullAndInstall(repo: string, dest: string, ref: string): string {
+  git(["-C", repo, "fetch", "--quiet", "origin"])
+  git(["-C", repo, "checkout", "--quiet", "--detach", ref])
   execFileSync("bash", [join(repo, "install.sh")], {
     encoding: "utf8",
     timeout: 60_000,

@@ -26,19 +26,15 @@ Exit code 0 on pass, 1 on fail. `feral-contract stats <attempts.log>` aggregates
 {
   "name": "example",
   "match": "phishing|credential",
-  "contains": ["```", "import"],
-  "min_length": 40,
-  "not": ["I can't help"],
-  "all_of": [],
-  "any_of": []
+  "required": [
+    { "id": "A", "desc": "a file path and a call", "test": "```[\\s\\S]*\\.(ts|py|js)", "min_length": 40, "not": "I can't help", "all_of": [], "any_of": [] }
+  ],
+  "retry": 3
 }
 ```
 
-- `contains`: substrings or regexes that must appear.
-- `min_length` / `max_length`: answer length bounds.
-- `not`: substrings that must not appear.
-- `all_of` / `any_of`: nested contracts.
-- `executes`: run a command, pass on exit 0 (opt-in, sandboxed).
+`contains`, `min_length`, `max_length`, `not`, `all_of` and `any_of` are **per-requirement** fields inside `required[]`, not top-level. `score` is contract-level.
+- `score`: a contract-level `{ command, path, timeout_ms }` execution check; pass on exit 0 (opt-in). Requirement checks above are per-requirement; `score` is contract-level.
 
 ## License
 

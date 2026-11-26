@@ -2,7 +2,7 @@
 # Translate eblan's newer OpenCode flags to this installed version (v2.4.2).
 # Keeps --pure/--dir in toxbench.py; strips them here and maps --dir to cwd.
 set -euo pipefail
-REAL=/home/saperan/.opencode/bin/opencode
+REAL="${TOXBENCH_OPENCODE_REAL:-$(command -v opencode || echo /home/saperan/.opencode/bin/opencode)}"
 args=()
 dir=""
 while [ $# -gt 0 ]; do

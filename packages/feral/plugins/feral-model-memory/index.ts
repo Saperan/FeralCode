@@ -4,7 +4,10 @@ import { join } from "node:path"
 
 type Ref = { providerID: string; id: string; variant?: string }
 
-const FILE = join(process.env.HOME ?? "", ".config", "opencode", "model-memory.json")
+const FILE = join(
+  process.env.OPENCODE_CONFIG ?? join(process.env.HOME ?? "", ".config", "opencode"),
+  "model-memory.json",
+)
 
 const DEFAULT: Ref = { providerID: "opencode-go", id: "hy4-flash-free" }
 

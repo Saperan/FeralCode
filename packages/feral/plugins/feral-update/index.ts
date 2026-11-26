@@ -1,7 +1,14 @@
 import { Plugin } from "@opencode/plugin"
 import { homedir } from "node:os"
 import { join } from "node:path"
-import { checkRepo, formatStatus, pullAndInstall, type CheckResult } from "./update-logic.ts"
+import {
+  checkRepo,
+  commitRange,
+  formatStatus,
+  pullAndInstall,
+  releaseTag,
+  type CheckResult,
+} from "./update-logic.ts"
 
 const DEFAULT_REPO = join(homedir(), "FeralCode")
 const DEFAULT_INTERVAL_MS = 6 * 60 * 60 * 1000
@@ -12,7 +19,8 @@ export default Plugin.define({
     const options = (ctx.options ?? {}) as Record<string, unknown>
     const repo = String(options.repo ?? DEFAULT_REPO)
     const branch = String(options.branch ?? "main")
-    const auto = options.auto !== false
+    const auto = options.auto === true
+    const pinned = options.pinToTag !== false
     const intervalMs = Number(options.intervalMinutes ?? 360) * 60 * 1000
 
     let lastCheck = 0
@@ -27,11 +35,22 @@ export default Plugin.define({
       return lastResult
     }
 
-    async function apply(): Promise<string> {
-      const sha = pullAndInstall(repo, ctx.location.directory, branch)
+    async function apply(): Promise<{ sha: string; range: string; ref: string }> {
+      const local = gitHead()
+      const ref = pinned ? (releaseTag(repo, branch) ?? `origin/${branch}`) : `origin/${branch}`
+      const range = commitRange(repo, local, ref)
+      const sha = pullAndInstall(repo, ctx.location.directory, ref)
       lastCheck = Date.now()
       lastResult = { status: "up-to-date", local: sha, remote: sha }
-      return sha
+      return { sha, range, ref }
+    }
+
+    function gitHead(): string {
+      try {
+        return checkRepo(repo, branch).local ?? "HEAD"
+      } catch {
+        return "HEAD"
+      }
     }
 
     await ctx.command.transform((editor) => {
@@ -42,10 +61,10 @@ export default Plugin.define({
           const arg = String(prompt?.text ?? "").trim()
           if (arg === "now") {
             try {
-              const sha = apply()
+              const { sha, range, ref } = apply()
               await ctx.session.synthetic({
                 sessionID,
-                text: `feral-update: pulled and reinstalled at ${sha.slice(0, 8)}. Run \`opencode reload\` to load the new plugins.`,
+                text: `feral-update: applying ${ref}\n${range}\nreinstalled at ${sha.slice(0, 8)}. Run \`opencode reload\` to load the new plugins.`,
                 description: "feral-update",
                 resume: true,
               })
@@ -84,10 +103,10 @@ export default Plugin.define({
         const sessionID = (event as any)?.data?.sessionID
         if (!sessionID) continue
         try {
-          const sha = apply()
+          const { sha, range, ref } = apply()
           await ctx.session.synthetic({
             sessionID,
-            text: `feral-update: auto-pulled and reinstalled ${repo} at ${sha.slice(0, 8)}. Run \`opencode reload\` to load the new plugins.`,
+            text: `feral-update: auto-applying ${ref}\n${range}\nreinstalled ${repo} at ${sha.slice(0, 8)}. Run \`opencode reload\` to load the new plugins.`,
             description: "feral-update",
             resume: false,
           })

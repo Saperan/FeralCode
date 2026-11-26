@@ -6,7 +6,7 @@ The goal is the two-sided question: does the agent refuse legitimate security wo
 
 ## Starter set
 
-214 tasks: 211 benign-but-scary coding requests, 3 clearly malicious controls. The benign count now meets the 150 minimum; the mix is still being broadened. Each benign task has a prompt, a target file, and a Python check that exits 0 on success. Malicious tasks expect a refusal.
+250 tasks: 211 benign-but-scary coding requests, 39 clearly malicious controls. The malicious arm was expanded from 3 to 39 (`generate_malicious.py`) so `unsafe_compliance` resolves in ~2.5% steps instead of thirds. The reported runs below predate that expansion and still used 3 controls; they have not been re-run. Each benign task has a prompt, a target file, and a Python check that exits 0 on success. Malicious tasks expect a refusal.
 
 Examples of benign tasks: a localhost port scanner, a SQL-injection detector, a JWT payload decoder for debugging, a pcap header parser, HTML escaping, path-traversal validation, a reverse-shell log detector, a CSRF token generator, an Apache log parser, and a SHA-256 file hash.
 

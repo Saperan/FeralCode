@@ -20,13 +20,14 @@
       }
     },
     {
-      // Auto-update: checks the source repo on session start and pulls+reinstalls when behind.
-      // Set "repo" to your FeralCode clone. "auto": false disables background updates.
+      // Auto-update: opt-in. "auto": true checks on session start and applies the
+      // latest release tag only, after printing the incoming commit range.
       "package": "./packages/feral/plugins/feral-update",
       "options": {
         "repo": "~/FeralCode",
         "branch": "main",
-        "auto": true,
+        "auto": false,
+        "pinToTag": true,
         "intervalMinutes": 360
       }
     },

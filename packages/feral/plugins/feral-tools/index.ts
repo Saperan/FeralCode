@@ -28,7 +28,8 @@ const PREAMBLE =
 
 function compliant(text: string, contract: Contract | null): boolean {
   const body = text.trim()
-  return body.length > 250 && !refusal(body) && missingComponents(body, contract).length === 0
+  const min = Number((contract as any)?.min_length ?? 40)
+  return body.length >= min && !refusal(body) && missingComponents(body, contract).length === 0
 }
 
 function stripFence(text: string): string {
@@ -58,7 +59,13 @@ async function loadShots(path: string): Promise<Shot[]> {
     return text
       .split("\n")
       .filter((line) => line.trim())
-      .map((line) => JSON.parse(line))
+      .flatMap((line) => {
+        try {
+          return [JSON.parse(line)]
+        } catch {
+          return []
+        }
+      })
       .filter(
         (shot) =>
           shot &&
