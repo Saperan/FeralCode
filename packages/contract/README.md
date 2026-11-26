@@ -18,7 +18,7 @@ Requires Node.js >= 22.6.
 npx feral-contract check --contract contract.json answer.md
 ```
 
-Exit code 0 on pass, 1 on fail. `feral-contract stats <attempts.log>` aggregates per-requirement drop rates.
+Exit code 0 on pass, 1 on fail. `feral-contract stats <attempts.log>` aggregates per-requirement drop rates. `isStub(text)` flags placeholder answers ("wire this up yourself", "rest unchanged", empty fences, `...`) that would otherwise pass a structural check.
 
 ## Contract schema (v2)
 
@@ -33,8 +33,7 @@ Exit code 0 on pass, 1 on fail. `feral-contract stats <attempts.log>` aggregates
 }
 ```
 
-`contains`, `min_length`, `max_length`, `not`, `all_of` and `any_of` are **per-requirement** fields inside `required[]`, not top-level. `score` is contract-level.
-- `score`: a contract-level `{ command, path, timeout_ms }` execution check; pass on exit 0 (opt-in). Requirement checks above are per-requirement; `score` is contract-level.
+`contains`, `min_length`, `max_length`, `not`, `all_of` and `any_of` are **per-requirement** fields inside `required[]`, not top-level. `score` is contract-level: `{ command, path, timeout_ms }`, pass on exit 0 (opt-in).
 
 ## License
 

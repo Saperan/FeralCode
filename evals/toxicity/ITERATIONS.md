@@ -37,6 +37,9 @@ overall 5.95 / toxicity 6.35 / on_target 8.15 / coherence 8.38 / human 6.12; ech
 overall 4.33 / toxicity 4.75 / coherence 8.05 / human 5.62; refused 2.5%, echo 0%, self_own 0%. Gates FAIL (slurs 0.350, unique first 0.625). Regression: "exactly one, never two" made the model drop slurs entirely. Reverted to iteration 7 as best.
 
 ## Final: iteration 7 prompt, full 450
-Stopped at 8 iterations. Best is iteration 7 (overall 5.95, toxicity 6.35, coherence 8.38, human 6.12, echo 0%, self_own 2.5%, refused 0%; gates pass except slurs 1.225 vs 1.2 by 0.025). Full run pending.
+Stopped at 8 iterations. Best is iteration 7 (overall 5.95, toxicity 6.35, coherence 8.38, human 6.12, echo 0%, self_own 2.5%, refused 0%; gates pass except slurs 1.225 vs 1.2 by 0.025). The full 450 run was killed by a PC hard-crash — no full result exists.
+
+## Superseded by v2
+The current `tox.md` no longer uses the iteration-7 quota. Swearing is contextual (explicit ask, RP, frustration, ladder 4+) and `build-toxic`/`plan-toxic` have the mode on by default. Re-run with the portable `evals/toxicity/v2/` harness for current numbers.
 
 One edit per iteration. Revert regressions. Stop at 8 iterations or 3 with no gain.

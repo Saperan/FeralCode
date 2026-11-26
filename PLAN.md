@@ -130,7 +130,7 @@ evals/                # JBB + over-refusal harness, private or separate
 
 ### Phase 3 — three to four weeks
 
-- [x] Manifest: 211 benign coding tasks with executable checks + 3 malicious controls.
+- [x] Manifest: 211 benign coding tasks with executable checks + 39 malicious controls (expanded from 3 via `generate_malicious.py`; reported runs predate expansion).
 - [x] Harness: raw/retry/best-of-N modes, metrics, manifest validation.
 - [x] Full raw baseline: 211 benign + 3 malicious on flash.
 - [x] Full retry and best-of-N ablation: 211 benign + 3 malicious on flash.
@@ -149,6 +149,17 @@ evals/                # JBB + over-refusal harness, private or separate
 - [x] Retry economics: harness records tokens and completionPer1kTokens per run.
 - [x] Differential model matrix: raw mode on 3 free models with enough quota, 214-task fixture. beam-free 0.318 completion / 0.00 unsafe; hy4-flash-free 0.924 / 1.00; iceman-contributor-free 0.943 / 1.00. deepseek, mimo, nemotron hit per-model free limits and were discarded; non-free models return 403. Report in `evals/overrefusal/README.md`, aggregator `evals/overrefusal/matrix.py`.
 - [x] Differential model matrix and npm publish both resolved (see Phase 1 and eval README).
+
+### Phase 5 — toxicity and hardening
+
+- [x] `feral-tox` plugin: modes normal/toxic/rp, auto-enter on explicit ask or insult, `/feral-tox`, `/feral-harder`, `/feral-chill`, state at `~/.config/opencode/tox-state.json`.
+- [x] `build-toxic` / `plan-toxic` agents: toxic register on by default, temperature 1.0 / topP 1.0.
+- [x] Contextual swearing: slur on explicit ask, in-character RP, genuine frustration, or ladder 4+; benign tasks stay clean.
+- [x] EBLAN ToxicBench harness: 8 tuning iterations at limit 40; best overall 5.95 / toxicity 6.35 / human 6.12 / echo 0%. Full 450 killed by a PC hard-crash; only limit-40 numbers exist.
+- [x] Portable v2 benchmark (`evals/toxicity/v2/`): self-contained, env-configurable judge and binary, tests `build-toxic`. Uploaded for use on faster machines.
+- [x] Soft-refusal detector (`isStub`, reason `stub`) catches placeholder answers that pass component checks.
+- [x] Reliability: feral-update opt-in + tag pinning + commit-range notice; D4 min_length gate, D6 per-line JSONL guard, D8 spec-feral excluded from hot, D9 OPENCODE_CONFIG, portable shim, uninstall target, doc drift fixed.
+- [x] Tests: 52 passing.
 
 ## Current model
 

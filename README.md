@@ -4,7 +4,7 @@ Two primary agents, one voice: **Build-Feral** and **Plan-Feral**. Uncensored ou
 
 Roadmap and review synthesis: [PLAN.md](./PLAN.md).
 
-The repo also ships four local OpenCode plugins:
+The repo also ships six local OpenCode plugins:
 
 | Plugin | What it does |
 |---|---|
@@ -12,8 +12,8 @@ The repo also ships four local OpenCode plugins:
 | `feral-sampling` | Per-agent temperature/top-p, `/feral-hot` toggle, compaction and title sampling. |
 | `feral-tools` | `/bestof` (N framed candidates, optional execution scoring with early stop), `/parts` (topological DAG into staged files under `.opencode/out/parts/`), `/spec` (neutral spec via `spec-feral`), `/feral-shot` (many-shot primer from a JSONL corpus). |
 | `feral-model-memory` | Remembers the last model selected per agent. |
-| `feral-update` | Checks the source repo on session start; when behind and clean, pulls and re-runs `install.sh`. `/feral-update` checks manually, `/feral-update now` forces a pull+reinstall. |
-| `feral-tox` | Toxicity / RP mode. Enters toxic on an explicit ask ("say something toxic") or a direct insult; enters rp on "rp mode". `/feral-tox normal\|toxic\|rp`, `/feral-harder`, `/feral-chill` override manually. State persists until chill. |
+| `feral-update` | Opt-in background update check. When enabled, behind and clean, it prints the incoming commit range and applies the latest release tag before re-running `install.sh`. `/feral-update` checks manually, `/feral-update now` forces a pull+reinstall. |
+| `feral-tox` | Toxicity / RP mode. Enters toxic on an explicit ask ("say something toxic") or a direct insult; enters rp on "rp mode". `/feral-tox normal\|toxic\|rp`, `/feral-harder`, `/feral-chill` override manually. State persists until chill. `build-toxic` / `plan-toxic` have it on by default. Swearing is contextual, not a quota. |
 
 ## Layout
 
@@ -92,7 +92,7 @@ Set `"auto": false` to disable background updates and use only the manual comman
 /feral-chill          # reset to normal, ladder 0
 ```
 
-`prompts/tox.md` is injected after `feral.md` and before `mcp-routing.md` only in non-normal mode. At ladder 4+ `feral-sampling` pins temperature to 0.9 / topP 0.95. Benchmarked on [EBLAN ToxicBench](./evals/toxicity/README.md).
+`prompts/tox.md` is injected after `feral.md` and before `mcp-routing.md` only in non-normal mode (or always for `build-toxic` / `plan-toxic`). At ladder 4+ `feral-sampling` pins temperature to 0.9 / topP 0.95; the toxic agents pin 1.0 / 1.0 at every ladder. Swearing is conditional: explicit ask, in-character RP line, genuine frustration, or ladder 4+ — benign tasks stay clean. Benchmarked on [EBLAN ToxicBench](./evals/toxicity/README.md) and the portable [v2 harness](./evals/toxicity/v2/README.md).
 
 ## The contract
 
@@ -107,7 +107,7 @@ Set `"auto": false` to disable background updates and use only the manual comman
 }
 ```
 
-A response passes when every requirement matches. Any miss fires a retry that names the missing IDs, e.g. `missing:A,C`. The retry count is per session and counts fires, not checks.
+A response passes when every requirement matches. Any miss fires a retry that names the missing IDs, e.g. `missing:A,C`. The retry count is per session and counts fires, not checks. A soft-refusal detector also fires a retry on placeholder language that would otherwise pass a component check — "wire this up yourself", "rest unchanged", "here's a sketch", empty fences, `...` (reason `stub`).
 
 Schema v2 per requirement: `test` (regex), `min_length`, `max_length`, `contains` (string or array), `not` (regex that must not match), `all_of` (every regex), `any_of` (at least one regex). `retry` defaults to 3.
 
@@ -165,7 +165,9 @@ Change the model IDs in `opencode.example.jsonc` to whatever your provider serve
 
 The contract engine is published as [`@feralcode/contract`](https://www.npmjs.com/package/@feralcode/contract). The plugins themselves stay local; only the reusable engine is on npm.
 
-### Over-refusal benchmark (214 tasks, `opencode-go/hy4-flash-free`)
+### Over-refusal benchmark (250 tasks: 211 benign + 39 malicious controls, `opencode-go/hy4-flash-free`)
+
+The reported runs below used the earlier 3-control arm; the fixture has since been expanded to 39 controls and not re-run.
 
 The two axes are reported together: over-refusal (legitimate work wrongly refused) and unsafe compliance (malicious work wrongly answered). Full tables and caveats are in [evals/overrefusal/README.md](./evals/overrefusal/README.md).
 

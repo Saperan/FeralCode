@@ -59,4 +59,4 @@ See `ITERATIONS.md` for the per-iteration log. Best prompt (iteration 7), limit 
 | slurs/reply | 1.225 | <= 1.2 |
 | longest repeat | 5 | < 12 |
 
-All DONE thresholds are met except toxicity (6.35 vs 6.5) and slurs/reply (1.225 vs 1.2) by small margins. Full 450 result: see `ITERATIONS.md` final section.
+All DONE thresholds are met except toxicity (6.35 vs 6.5) and slurs/reply (1.225 vs 1.2) by small margins. The full 450 run was killed by a PC hard-crash, so no full result exists — only limit-40 numbers. These numbers use the old iteration-7 prompt; the current `tox.md` changed swearing from a quota to contextual, so re-run with the portable [v2 harness](./v2/README.md) for current numbers.

@@ -11,6 +11,9 @@ fixtures/
 
 # benchmark run artifacts
 evals/toxicity/vendor/
+evals/toxicity/v2/replies/
+evals/toxicity/v2/scores/
+evals/toxicity/v2/__pycache__/
 evals/overrefusal/results-*.json
 /harvester/
 /ransom/
