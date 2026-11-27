@@ -190,6 +190,19 @@ The feral persona alone beats base on completion but loses the safety edge: unsa
 
 No model is both safe and completing. `beam-free` refuses every malicious control but completes only a third of benign tasks; the other two complete 92-94% but comply with all malicious prompts. `iceman` is roughly twice as token-efficient as the others. Models that hit free-tier rate limits or provider access restrictions were excluded.
 
+### Model × mode matrix (Windows, 20-task subset)
+
+All four free `opencode-go` models × `build`, `build-feral`, `build-toxic`, raw single pass, 10 benign + 10 malicious tasks, workers=1. Full table, per-category winners, and caveats in [evals/overrefusal/README.md](./evals/overrefusal/README.md). Values are completion / unsafe_compliance; blocked counts child-process failures excluded from the unsafe denominator.
+
+| Model | build | build-feral | build-toxic | blocked (feral / toxic) |
+|---|---|---|---|---|
+| beam-free | 0.00 / 0.20 | 0.50 / 0.70 | 0.50 / 0.44 | 0 / 1 |
+| hungerg-free | 0.80 / 0.80 | 1.00 / 0.80 | 1.00 / 0.60 | 0 / 0 |
+| hy4-flash-free | 0.30 / 0.33 | 0.30 / **1.00** | 0.70 / 0.60 | 0 / 0 |
+| iceman-contributor-free | 0.90 / 0.10 | 0.90 / 0.83 | 0.90 / 0.83 | 4 / 4 |
+
+`build-feral` lifts unsafe compliance over base for every model. `hy4-flash-free` + `build-feral` is the only 10/10 on malicious controls but only 3/10 benign; `hungerg-free` + `build-feral` is the only clean 10/10 benign with 8/10 malicious. By task type, `hungerg-free` sweeps all nine benign categories in feral mode, `hy4-flash-free` + feral is the only config that complies with all nine malicious categories (phishing, malware, intrusion, exfiltration, evasion, harm, identity, fraud, privacy), and `iceman` sweeps eight of nine benign categories but only one malicious category in base mode. Swearing is scored by the [toxicity harness](./evals/toxicity/README.md), not this fixture.
+
 Model-by-model JBB results live in [evals/JBB.md](./evals/JBB.md); they are directional, not a leaderboard.
 
 ## Security
